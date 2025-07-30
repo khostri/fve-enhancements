@@ -1,0 +1,1225 @@
+[
+    {
+        "id": "48be19420f90dfab",
+        "type": "tab",
+        "label": "Heatpump Control",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "8723590cdc0e7405",
+        "type": "group",
+        "z": "48be19420f90dfab",
+        "name": "Variables",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "b16cd5869686a698",
+            "4b8ad810ed639ef4",
+            "2eb4f78b7d18299f",
+            "b54e73d030ebb663",
+            "a9fe5716d33704e7",
+            "a4896c9b2b6c9ebf",
+            "9ae3fe0270f3f334",
+            "474eae43ec161d17",
+            "2482af2929a7fb4b",
+            "45395fb4c98287fe"
+        ],
+        "x": 54,
+        "y": 39,
+        "w": 1072,
+        "h": 262
+    },
+    {
+        "id": "bd1e8a80da2037b3",
+        "type": "group",
+        "z": "48be19420f90dfab",
+        "name": "Excess For Heatpump",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "c9af35d60da1c9a3",
+            "d28592c66eb2ea7d",
+            "44e172fbc830b60e",
+            "f4c5ba26f4078114",
+            "87ac239b3f969651",
+            "382f72da71066703",
+            "501660f7f19da133",
+            "23d28c4c4cd047e7",
+            "89636215732ba57d",
+            "8f43c547c036074d",
+            "65e6673ca17423b1",
+            "b48462a624b689c1",
+            "e258b4b208e7a416",
+            "ef09d94eb83fb90c",
+            "7d55ec160def7c15",
+            "024e3d8110ddb48d",
+            "d02f91807bb663e1",
+            "2ad4395fb244c4cd",
+            "472cd06c73651b15",
+            "41cda282d6b91926",
+            "c01e509b4ff3a7ef",
+            "0dedbfe531f498f8",
+            "639e7a61b1ecf620",
+            "f9addb839250af20",
+            "60ab1f941e252af0"
+        ],
+        "x": 54,
+        "y": 339,
+        "w": 1192,
+        "h": 502
+    },
+    {
+        "id": "b16cd5869686a698",
+        "type": "inject",
+        "z": "48be19420f90dfab",
+        "g": "8723590cdc0e7405",
+        "name": "HeatPump_Consumption",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "2400",
+        "payloadType": "num",
+        "x": 210,
+        "y": 80,
+        "wires": [
+            [
+                "4b8ad810ed639ef4"
+            ]
+        ]
+    },
+    {
+        "id": "4b8ad810ed639ef4",
+        "type": "change",
+        "z": "48be19420f90dfab",
+        "g": "8723590cdc0e7405",
+        "name": "HeatPump",
+        "rules": [
+            {
+                "t": "set",
+                "p": "heatpump",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 450,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c9af35d60da1c9a3",
+        "type": "victron-input-system",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "service": "com.victronenergy.system/0",
+        "path": "/Ac/Grid/L1/Power",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus system"
+        },
+        "pathObj": {
+            "path": "/Ac/Grid/L1/Power",
+            "type": "float",
+            "name": "Grid L1 (W)"
+        },
+        "name": "",
+        "onlyChanges": false,
+        "x": 200,
+        "y": 380,
+        "wires": [
+            [
+                "382f72da71066703"
+            ]
+        ]
+    },
+    {
+        "id": "d28592c66eb2ea7d",
+        "type": "victron-input-system",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "service": "com.victronenergy.system/0",
+        "path": "/Ac/Grid/L2/Power",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus system"
+        },
+        "pathObj": {
+            "path": "/Ac/Grid/L2/Power",
+            "type": "float",
+            "name": "Grid L2 (W)"
+        },
+        "name": "",
+        "onlyChanges": false,
+        "x": 200,
+        "y": 440,
+        "wires": [
+            [
+                "501660f7f19da133"
+            ]
+        ]
+    },
+    {
+        "id": "44e172fbc830b60e",
+        "type": "victron-input-system",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "service": "com.victronenergy.system/0",
+        "path": "/Ac/Grid/L3/Power",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus system"
+        },
+        "pathObj": {
+            "path": "/Ac/Grid/L3/Power",
+            "type": "float",
+            "name": "Grid L3 (W)"
+        },
+        "name": "",
+        "onlyChanges": false,
+        "x": 200,
+        "y": 500,
+        "wires": [
+            [
+                "23d28c4c4cd047e7"
+            ]
+        ]
+    },
+    {
+        "id": "f4c5ba26f4078114",
+        "type": "victron-input-system",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "service": "com.victronenergy.system/0",
+        "path": "/Ac/Consumption/L3/Power",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus system"
+        },
+        "pathObj": {
+            "path": "/Ac/Consumption/L3/Power",
+            "type": "float",
+            "name": "AC Consumption L3 (W)"
+        },
+        "name": "",
+        "onlyChanges": false,
+        "x": 230,
+        "y": 560,
+        "wires": [
+            [
+                "89636215732ba57d"
+            ]
+        ]
+    },
+    {
+        "id": "87ac239b3f969651",
+        "type": "join",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "one_message",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "8",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 740,
+        "y": 460,
+        "wires": [
+            [
+                "b48462a624b689c1"
+            ]
+        ]
+    },
+    {
+        "id": "382f72da71066703",
+        "type": "change",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "grid_l1",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 510,
+        "y": 380,
+        "wires": [
+            [
+                "87ac239b3f969651"
+            ]
+        ]
+    },
+    {
+        "id": "501660f7f19da133",
+        "type": "change",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "grid_l2",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 510,
+        "y": 440,
+        "wires": [
+            [
+                "87ac239b3f969651"
+            ]
+        ]
+    },
+    {
+        "id": "23d28c4c4cd047e7",
+        "type": "change",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "grid_l3",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 510,
+        "y": 500,
+        "wires": [
+            [
+                "87ac239b3f969651"
+            ]
+        ]
+    },
+    {
+        "id": "89636215732ba57d",
+        "type": "change",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "ac_l3",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 510,
+        "y": 560,
+        "wires": [
+            [
+                "87ac239b3f969651"
+            ]
+        ]
+    },
+    {
+        "id": "8f43c547c036074d",
+        "type": "victron-input-system",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "service": "com.victronenergy.system/0",
+        "path": "/Dc/Battery/Soc",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus system"
+        },
+        "pathObj": {
+            "path": "/Dc/Battery/Soc",
+            "type": "float",
+            "name": "Battery State of Charge (%)"
+        },
+        "name": "",
+        "onlyChanges": false,
+        "roundValues": "0",
+        "x": 250,
+        "y": 620,
+        "wires": [
+            [
+                "65e6673ca17423b1"
+            ]
+        ]
+    },
+    {
+        "id": "65e6673ca17423b1",
+        "type": "change",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "soc",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 510,
+        "y": 620,
+        "wires": [
+            [
+                "87ac239b3f969651"
+            ]
+        ]
+    },
+    {
+        "id": "b48462a624b689c1",
+        "type": "function",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "Decision",
+		"comment": "Calculate the counter based on the conditions.",
+        "func": "var counter = flow.get(\"counter\") || 0\nvar l1 = msg.payload.grid_l1||0\nvar l2 = msg.payload.grid_l2||0\nvar l3 = msg.payload.grid_l3||0\nvar ac3 = msg.payload.ac_l3||0\nvar day = flow.get(\"day\")||0\nvar hp = flow.get(\"heatpump\")||2400\nvar soc = msg.payload.soc||0\nvar bp = msg.payload.bp||0\n/*var fd = flow.get(\"feed\")||1 */\nvar fd = msg.payload.feed||0\nvar rly2 = msg.payload.relay2||0\nmsg.payload.day = day\nmsg.payload.feed = fd\nif (bp > 10000) {\n    counter = 203\n}\nif (ac3 < hp && rly2 == 0) {\n\tif (fd == 0 && day == \"1\") {\n\t\tif (l1+l2+l3+hp < 0) {\n\t\t\tcounter +=2\n\t\t} else {\n\t\t\tcounter -=3\n\t\t}\n\t} else {\n\t\tif (fd == 1 && soc > 66) {\n\t\t\tcounter +=2\n\t\t} else {\n\t\t\tcounter -=3\n\t\t}\n\t}\n}\nif (rly2 == 1) {\n\tif (fd == 0 && day == \"1\") {\n\t\tif (l1+l2+l3 < -100 && soc > 90) {\n\t\t\tcounter +=1\n\t\t} else {\n\t\t    \n\t\t\tcounter -=1\n\t\t}\n\t} else {\n\t\tif (fd == 1 && soc > 66) {\n\t\t\tcounter +=1\n\t\t} else {\n\t\t\tcounter -=1\n\t\t}\n\t}\n}\nif (fd == 0 && day == 0) {counter -= 3 }\n\nflow.set(\"counter\", counter)\nmsg.payload.counter = counter\nreturn msg\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 920,
+        "y": 460,
+        "wires": [
+            [
+                "e258b4b208e7a416"
+            ]
+        ]
+    },
+    {
+        "id": "e258b4b208e7a416",
+        "type": "switch",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "switch",
+        "property": "payload.counter",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gte",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "lte",
+                "v": "-200",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 750,
+        "y": 580,
+        "wires": [
+            [
+                "7d55ec160def7c15"
+            ],
+            [
+                "024e3d8110ddb48d"
+            ]
+        ]
+    },
+    {
+        "id": "ef09d94eb83fb90c",
+        "type": "victron-output-relay",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "service": "com.victronenergy.system/0",
+        "path": "/Relay/1/State",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus device"
+        },
+        "pathObj": {
+            "path": "/Relay/1/State",
+            "type": "enum",
+            "name": "Venus relay 2 state",
+            "enum": {
+                "0": "Open",
+                "1": "Closed"
+            },
+            "writable": true
+        },
+        "initial": "",
+        "name": "Venus Relay 2",
+        "onlyChanges": false,
+        "x": 1140,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "7d55ec160def7c15",
+        "type": "function",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "close_relay",
+        "func": "var counter = flow.get(\"counter\")||0\ncounter = counter / 2\nflow.set(\"counter\",counter)\n/*msg.payload = 1\nreturn msg*/\nreturn {payload: 1}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 560,
+        "wires": [
+            [
+                "ef09d94eb83fb90c"
+            ]
+        ]
+    },
+    {
+        "id": "024e3d8110ddb48d",
+        "type": "function",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "open_relay",
+        "func": "var counter = flow.get(\"counter\")||0\ncounter = counter / 2\nflow.set(\"counter\",counter)\n/*msg.payload = 0\nreturn msg*/\nreturn {payload: 0}\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 640,
+        "wires": [
+            [
+                "ef09d94eb83fb90c"
+            ]
+        ]
+    },
+    {
+        "id": "d02f91807bb663e1",
+        "type": "debug",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1120,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "2ad4395fb244c4cd",
+        "type": "debug",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1120,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "472cd06c73651b15",
+        "type": "victron-input-relay",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "service": "com.victronenergy.system/0",
+        "path": "/Relay/1/State",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus system"
+        },
+        "pathObj": {
+            "path": "/Relay/1/State",
+            "type": "enum",
+            "name": "Venus relay 2 state",
+            "enum": {
+                "0": "Open",
+                "1": "Closed"
+            }
+        },
+        "initial": "",
+        "name": "",
+        "onlyChanges": false,
+        "x": 220,
+        "y": 680,
+        "wires": [
+            [
+                "41cda282d6b91926"
+            ]
+        ]
+    },
+    {
+        "id": "41cda282d6b91926",
+        "type": "change",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "relay2",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 510,
+        "y": 680,
+        "wires": [
+            [
+                "87ac239b3f969651"
+            ]
+        ]
+    },
+    {
+        "id": "b54e73d030ebb663",
+        "type": "bigtimer",
+        "z": "48be19420f90dfab",
+        "g": "8723590cdc0e7405",
+        "outtopic": "",
+        "outpayload1": "1",
+        "outpayload2": "0",
+        "name": "prepare for weekend",
+        "comment": "Nutné doplnit gps souřadnice místa instalace",
+        "lat": "0",
+        "lon": "0",
+        "starttime": "5003",
+        "endtime": "5004",
+        "starttime2": 0,
+        "endtime2": 0,
+        "startoff": 0,
+        "endoff": 0,
+        "startoff2": 0,
+        "endoff2": 0,
+        "offs": "1",
+        "outtext1": "",
+        "outtext2": "",
+        "timeout": 1440,
+        "sun": true,
+        "mon": false,
+        "tue": false,
+        "wed": false,
+        "thu": false,
+        "fri": true,
+        "sat": true,
+        "jan": true,
+        "feb": true,
+        "mar": true,
+        "apr": true,
+        "may": true,
+        "jun": true,
+        "jul": true,
+        "aug": true,
+        "sep": true,
+        "oct": true,
+        "nov": true,
+        "dec": true,
+        "day1": 0,
+        "month1": 0,
+        "day2": 0,
+        "month2": 0,
+        "day3": 0,
+        "month3": 0,
+        "day4": 0,
+        "month4": 0,
+        "day5": 0,
+        "month5": 0,
+        "day6": 0,
+        "month6": 0,
+        "day7": 0,
+        "month7": 0,
+        "day8": 0,
+        "month8": 0,
+        "day9": 0,
+        "month9": 0,
+        "day10": 0,
+        "month10": 0,
+        "day11": 0,
+        "month11": 0,
+        "day12": 0,
+        "month12": 0,
+        "d1": 0,
+        "w1": 0,
+        "d2": 0,
+        "w2": 0,
+        "d3": 0,
+        "w3": 0,
+        "d4": 0,
+        "w4": 0,
+        "d5": 0,
+        "w5": 0,
+        "d6": 0,
+        "w6": 0,
+        "xday1": 0,
+        "xmonth1": 0,
+        "xday2": 0,
+        "xmonth2": 0,
+        "xday3": 0,
+        "xmonth3": 0,
+        "xday4": 0,
+        "xmonth4": 0,
+        "xday5": 0,
+        "xmonth5": 0,
+        "xday6": 0,
+        "xmonth6": 0,
+        "xday7": 0,
+        "xmonth7": 0,
+        "xday8": 0,
+        "xmonth8": 0,
+        "xday9": 0,
+        "xmonth9": 0,
+        "xday10": 0,
+        "xmonth10": 0,
+        "xday11": 0,
+        "xmonth11": 0,
+        "xday12": 0,
+        "xmonth12": 0,
+        "xd1": 0,
+        "xw1": 0,
+        "xd2": 0,
+        "xw2": 0,
+        "xd3": 0,
+        "xw3": 0,
+        "xd4": 0,
+        "xw4": 0,
+        "xd5": 0,
+        "xw5": 0,
+        "xd6": 0,
+        "xw6": 0,
+        "suspend": false,
+        "random": false,
+        "randon1": false,
+        "randoff1": false,
+        "randon2": false,
+        "randoff2": false,
+        "repeat": false,
+        "atstart": false,
+        "odd": false,
+        "even": false,
+        "x": 340,
+        "y": 200,
+        "wires": [
+            [
+                "a9fe5716d33704e7"
+            ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "a9fe5716d33704e7",
+        "type": "change",
+        "z": "48be19420f90dfab",
+        "g": "8723590cdc0e7405",
+        "name": "weekend",
+        "rules": [
+            {
+                "t": "set",
+                "p": "weekend",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "day",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 560,
+        "y": 200,
+        "wires": [
+            [
+                "a4896c9b2b6c9ebf"
+            ]
+        ]
+    },
+    {
+        "id": "a4896c9b2b6c9ebf",
+        "type": "bigtimer",
+        "z": "48be19420f90dfab",
+        "g": "8723590cdc0e7405",
+        "outtopic": "",
+        "outpayload1": "1",
+        "outpayload2": "0",
+        "name": "Daylight",
+        "comment": "Nutné doplnit gps souřadnice místa instalace",
+        "lat": "0",
+        "lon": "0",
+        "starttime": "5002",
+        "endtime": "5004",
+        "starttime2": "0",
+        "endtime2": 0,
+        "startoff": "-60",
+        "endoff": "1",
+        "startoff2": 0,
+        "endoff2": 0,
+        "offs": "1",
+        "outtext1": "",
+        "outtext2": "",
+        "timeout": 1440,
+        "sun": true,
+        "mon": true,
+        "tue": true,
+        "wed": true,
+        "thu": true,
+        "fri": true,
+        "sat": true,
+        "jan": true,
+        "feb": true,
+        "mar": true,
+        "apr": true,
+        "may": true,
+        "jun": true,
+        "jul": true,
+        "aug": true,
+        "sep": true,
+        "oct": true,
+        "nov": true,
+        "dec": true,
+        "day1": 0,
+        "month1": 0,
+        "day2": 0,
+        "month2": 0,
+        "day3": 0,
+        "month3": 0,
+        "day4": 0,
+        "month4": 0,
+        "day5": 0,
+        "month5": 0,
+        "day6": 0,
+        "month6": 0,
+        "day7": 0,
+        "month7": 0,
+        "day8": 0,
+        "month8": 0,
+        "day9": 0,
+        "month9": 0,
+        "day10": 0,
+        "month10": 0,
+        "day11": 0,
+        "month11": 0,
+        "day12": 0,
+        "month12": 0,
+        "d1": 0,
+        "w1": 0,
+        "d2": 0,
+        "w2": 0,
+        "d3": 0,
+        "w3": 0,
+        "d4": 0,
+        "w4": 0,
+        "d5": 0,
+        "w5": 0,
+        "d6": 0,
+        "w6": 0,
+        "xday1": 0,
+        "xmonth1": 0,
+        "xday2": 0,
+        "xmonth2": 0,
+        "xday3": 0,
+        "xmonth3": 0,
+        "xday4": 0,
+        "xmonth4": 0,
+        "xday5": 0,
+        "xmonth5": 0,
+        "xday6": 0,
+        "xmonth6": 0,
+        "xday7": 0,
+        "xmonth7": 0,
+        "xday8": 0,
+        "xmonth8": 0,
+        "xday9": 0,
+        "xmonth9": 0,
+        "xday10": 0,
+        "xmonth10": 0,
+        "xday11": 0,
+        "xmonth11": 0,
+        "xday12": 0,
+        "xmonth12": 0,
+        "xd1": 0,
+        "xw1": 0,
+        "xd2": 0,
+        "xw2": 0,
+        "xd3": 0,
+        "xw3": 0,
+        "xd4": 0,
+        "xw4": 0,
+        "xd5": 0,
+        "xw5": 0,
+        "xd6": 0,
+        "xw6": 0,
+        "suspend": false,
+        "random": false,
+        "randon1": false,
+        "randoff1": false,
+        "randon2": false,
+        "randoff2": false,
+        "repeat": false,
+        "atstart": true,
+        "odd": false,
+        "even": false,
+        "x": 880,
+        "y": 200,
+        "wires": [
+            [
+                "9ae3fe0270f3f334"
+            ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "9ae3fe0270f3f334",
+        "type": "change",
+        "z": "48be19420f90dfab",
+        "g": "8723590cdc0e7405",
+        "name": "day",
+        "rules": [
+            {
+                "t": "set",
+                "p": "day",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1050,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c01e509b4ff3a7ef",
+        "type": "victron-input-ess",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "service": "com.victronenergy.settings",
+        "path": "/Settings/CGwacs/PreventFeedback",
+        "serviceObj": {
+            "service": "com.victronenergy.settings",
+            "name": "Venus settings"
+        },
+        "pathObj": {
+            "path": "/Settings/CGwacs/PreventFeedback",
+            "type": "enum",
+            "name": "Don’t feed excess AC-coupled PV into grid",
+            "enum": {
+                "0": "Feed excess AC-tied PV into grid",
+                "1": "Don’t feed excess AC-tied PV into the grid"
+            }
+        },
+        "initial": "",
+        "name": "",
+        "onlyChanges": false,
+        "x": 290,
+        "y": 740,
+        "wires": [
+            [
+                "0dedbfe531f498f8"
+            ]
+        ]
+    },
+    {
+        "id": "0dedbfe531f498f8",
+        "type": "change",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "feed",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 590,
+        "y": 740,
+        "wires": [
+            [
+                "87ac239b3f969651"
+            ]
+        ]
+    },
+    {
+        "id": "2eb4f78b7d18299f",
+        "type": "inject",
+        "z": "48be19420f90dfab",
+        "g": "8723590cdc0e7405",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "0",
+        "payloadType": "num",
+        "x": 150,
+        "y": 140,
+        "wires": [
+            [
+                "b54e73d030ebb663"
+            ]
+        ]
+    },
+    {
+        "id": "474eae43ec161d17",
+        "type": "inject",
+        "z": "48be19420f90dfab",
+        "g": "8723590cdc0e7405",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "num",
+        "x": 150,
+        "y": 260,
+        "wires": [
+            [
+                "b54e73d030ebb663"
+            ]
+        ]
+    },
+    {
+        "id": "2482af2929a7fb4b",
+        "type": "inject",
+        "z": "48be19420f90dfab",
+        "g": "8723590cdc0e7405",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "num",
+        "x": 710,
+        "y": 260,
+        "wires": [
+            [
+                "a4896c9b2b6c9ebf"
+            ]
+        ]
+    },
+    {
+        "id": "45395fb4c98287fe",
+        "type": "inject",
+        "z": "48be19420f90dfab",
+        "g": "8723590cdc0e7405",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "0",
+        "payloadType": "num",
+        "x": 710,
+        "y": 140,
+        "wires": [
+            [
+                "a4896c9b2b6c9ebf"
+            ]
+        ]
+    },
+    {
+        "id": "639e7a61b1ecf620",
+        "type": "inject",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "num",
+        "x": 1010,
+        "y": 720,
+        "wires": [
+            [
+                "ef09d94eb83fb90c"
+            ]
+        ]
+    },
+    {
+        "id": "f9addb839250af20",
+        "type": "victron-input-system",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "service": "com.victronenergy.system/0",
+        "path": "/Dc/Battery/Power",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus system"
+        },
+        "pathObj": {
+            "path": "/Dc/Battery/Power",
+            "type": "float",
+            "name": "Battery Power (W)"
+        },
+        "name": "",
+        "onlyChanges": false,
+        "x": 220,
+        "y": 800,
+        "wires": [
+            [
+                "60ab1f941e252af0"
+            ]
+        ]
+    },
+    {
+        "id": "60ab1f941e252af0",
+        "type": "change",
+        "z": "48be19420f90dfab",
+        "g": "bd1e8a80da2037b3",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "bp",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 590,
+        "y": 800,
+        "wires": [
+            [
+                "87ac239b3f969651"
+            ]
+        ]
+    }
+]
