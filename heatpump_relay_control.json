@@ -1,0 +1,1065 @@
+[
+    {
+        "id": "224cfad3ce47e7ce",
+        "type": "tab",
+        "label": "Heatpump Relay Control",
+        "disabled": false,
+        "info": "Relay control for heatpump based on solar surplus. Inputs stored to flow context every time they arrive; Decision function evaluates every 10s. Counter threshold: ±60 → relay switches, counter halved.",
+        "env": []
+    },
+    {
+        "id": "52eb4548c7772ca1",
+        "type": "group",
+        "z": "224cfad3ce47e7ce",
+        "name": "Data Ingestion",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "8b1583c5bd1cacf7",
+            "36d279e0f3cf111f",
+            "cb41b5013c481abf",
+            "f113419f391d7245",
+            "7d7a7e5df7ee334e",
+            "d9da47d0ed59c29e",
+            "0dcf75759a267744",
+            "916a223caf5b6a3c",
+            "0d25e5cfb4975dbb",
+            "d5da906bf8519c3d",
+            "3649764628a8987b",
+            "c5b4ccb9ef776376",
+            "d35cda27d1b68f27",
+            "90e76c982c2ae8f8",
+            "207fe3b0bc1becc1",
+            "bdc7a9b28f6ecaf5"
+        ],
+        "x": 54,
+        "y": 59,
+        "w": 392,
+        "h": 502
+    },
+    {
+        "id": "100b19a6e99d2564",
+        "type": "group",
+        "z": "224cfad3ce47e7ce",
+        "name": "Variables and Timers",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "2c4fd58b3ab778d4",
+            "c384899a2038e902",
+            "ee8da4f046593737",
+            "5b760ea89502b5e7",
+            "init_inject",
+            "init_function"
+        ],
+        "x": 494,
+        "y": 59,
+        "w": 572,
+        "h": 229.5
+    },
+    {
+        "id": "f16635b09b6de84c",
+        "type": "group",
+        "z": "224cfad3ce47e7ce",
+        "name": "Evaluate Engine (runs every 10s)",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "fc69eaf97578a11a",
+            "eb6c33040cd236f9",
+            "a25975fb2a74e8f1",
+            "a10b2fdc812365b4",
+            "9f388f73cbf1bb37"
+        ],
+        "x": 474,
+        "y": 419,
+        "w": 892,
+        "h": 142
+    },
+    {
+        "id": "8b1583c5bd1cacf7",
+        "type": "victron-input-system",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "service": "com.victronenergy.system/0",
+        "path": "/Ac/Grid/L1/Power",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus system",
+            "communityTag": "system"
+        },
+        "pathObj": {
+            "path": "/Ac/Grid/L1/Power",
+            "type": "float",
+            "name": "Grid L1 (W)"
+        },
+        "name": "Grid L1",
+        "onlyChanges": false,
+        "roundValues": "no",
+        "rateLimit": 0,
+        "outputs": 1,
+        "conditionalMode": false,
+        "outputTrue": "true",
+        "outputFalse": "false",
+        "debounce": "2000",
+        "x": 130,
+        "y": 100,
+        "wires": [
+            [
+                "36d279e0f3cf111f"
+            ]
+        ]
+    },
+    {
+        "id": "36d279e0f3cf111f",
+        "type": "change",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "name": "→ data.l1",
+        "rules": [
+            {
+                "t": "set",
+                "p": "data.l1",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 340,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "cb41b5013c481abf",
+        "type": "victron-input-system",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "service": "com.victronenergy.system/0",
+        "path": "/Ac/Grid/L2/Power",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus system",
+            "communityTag": "system"
+        },
+        "pathObj": {
+            "path": "/Ac/Grid/L2/Power",
+            "type": "float",
+            "name": "Grid L2 (W)"
+        },
+        "name": "Grid L2",
+        "onlyChanges": false,
+        "roundValues": "no",
+        "rateLimit": 0,
+        "outputs": 1,
+        "conditionalMode": false,
+        "outputTrue": "true",
+        "outputFalse": "false",
+        "debounce": "2000",
+        "x": 130,
+        "y": 160,
+        "wires": [
+            [
+                "d5da906bf8519c3d"
+            ]
+        ]
+    },
+    {
+        "id": "f113419f391d7245",
+        "type": "victron-input-system",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "service": "com.victronenergy.system/0",
+        "path": "/Ac/Grid/L3/Power",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus system",
+            "communityTag": "system"
+        },
+        "pathObj": {
+            "path": "/Ac/Grid/L3/Power",
+            "type": "float",
+            "name": "Grid L3 (W)"
+        },
+        "name": "Grid L3",
+        "onlyChanges": false,
+        "roundValues": "no",
+        "rateLimit": 0,
+        "outputs": 1,
+        "conditionalMode": false,
+        "outputTrue": "true",
+        "outputFalse": "false",
+        "debounce": "2000",
+        "x": 130,
+        "y": 220,
+        "wires": [
+            [
+                "3649764628a8987b"
+            ]
+        ]
+    },
+    {
+        "id": "7d7a7e5df7ee334e",
+        "type": "victron-input-system",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "service": "com.victronenergy.system/0",
+        "path": "/Ac/Consumption/L3/Power",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus system",
+            "communityTag": "system"
+        },
+        "pathObj": {
+            "path": "/Ac/Consumption/L3/Power",
+            "type": "float",
+            "name": "AC Consumption L3 (W)"
+        },
+        "name": "AC Cons L3",
+        "onlyChanges": false,
+        "roundValues": "no",
+        "rateLimit": 0,
+        "outputs": 1,
+        "conditionalMode": false,
+        "outputTrue": "true",
+        "outputFalse": "false",
+        "debounce": "2000",
+        "x": 150,
+        "y": 280,
+        "wires": [
+            [
+                "c5b4ccb9ef776376"
+            ]
+        ]
+    },
+    {
+        "id": "d9da47d0ed59c29e",
+        "type": "victron-input-system",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "service": "com.victronenergy.system/0",
+        "path": "/Dc/Battery/Soc",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus system",
+            "communityTag": "system"
+        },
+        "pathObj": {
+            "path": "/Dc/Battery/Soc",
+            "type": "float",
+            "name": "Battery State of Charge (%)"
+        },
+        "name": "Batery SOC",
+        "onlyChanges": false,
+        "roundValues": "no",
+        "rateLimit": 0,
+        "outputs": 1,
+        "conditionalMode": false,
+        "outputTrue": "true",
+        "outputFalse": "false",
+        "debounce": "2000",
+        "x": 150,
+        "y": 340,
+        "wires": [
+            [
+                "d35cda27d1b68f27"
+            ]
+        ]
+    },
+    {
+        "id": "0dcf75759a267744",
+        "type": "victron-input-system",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "service": "com.victronenergy.system/0",
+        "path": "/Dc/Battery/Power",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus system",
+            "communityTag": "system"
+        },
+        "pathObj": {
+            "path": "/Dc/Battery/Power",
+            "type": "float",
+            "name": "Battery Power (W)"
+        },
+        "name": "Batery Pwr",
+        "onlyChanges": false,
+        "roundValues": "no",
+        "rateLimit": 0,
+        "outputs": 1,
+        "conditionalMode": false,
+        "outputTrue": "true",
+        "outputFalse": "false",
+        "debounce": "2000",
+        "x": 140,
+        "y": 400,
+        "wires": [
+            [
+                "90e76c982c2ae8f8"
+            ]
+        ]
+    },
+    {
+        "id": "916a223caf5b6a3c",
+        "type": "victron-input-relay",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "service": "com.victronenergy.system/0",
+        "path": "/Relay/1/State",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus system",
+            "communityTag": "relay"
+        },
+        "pathObj": {
+            "path": "/Relay/1/State",
+            "type": "enum",
+            "name": "Venus relay 2 state",
+            "enum": {
+                "0": "Open",
+                "1": "Closed"
+            },
+            "mode": "both"
+        },
+        "name": "Relay 2 State",
+        "onlyChanges": false,
+        "roundValues": "no",
+        "rateLimit": 0,
+        "outputs": 1,
+        "conditionalMode": false,
+        "outputTrue": "true",
+        "outputFalse": "false",
+        "debounce": "2000",
+        "x": 150,
+        "y": 460,
+        "wires": [
+            [
+                "207fe3b0bc1becc1"
+            ]
+        ]
+    },
+    {
+        "id": "0d25e5cfb4975dbb",
+        "type": "victron-input-settings",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "service": "com.victronenergy.settings",
+        "path": "/Settings/CGwacs/OvervoltageFeedIn",
+        "serviceObj": {
+            "service": "com.victronenergy.settings",
+            "name": "Venus settings",
+            "communityTag": "settings"
+        },
+        "pathObj": {
+            "path": "/Settings/CGwacs/OvervoltageFeedIn",
+            "type": "enum",
+            "name": "Feed excess DC-coupled PV into grid",
+            "enum": {
+                "0": "Don’t feed excess DC-tied PV into grid",
+                "1": "Feed excess DC-tied PV into the grid"
+            },
+            "mode": "both"
+        },
+        "name": "Feed In Enabled",
+        "onlyChanges": false,
+        "roundValues": "no",
+        "rateLimit": 0,
+        "outputs": 1,
+        "conditionalMode": false,
+        "outputTrue": "true",
+        "outputFalse": "false",
+        "debounce": "2000",
+        "x": 160,
+        "y": 520,
+        "wires": [
+            [
+                "bdc7a9b28f6ecaf5"
+            ]
+        ]
+    },
+    {
+        "id": "d5da906bf8519c3d",
+        "type": "change",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "name": "→ data.l2",
+        "rules": [
+            {
+                "t": "set",
+                "p": "data.l2",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 340,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3649764628a8987b",
+        "type": "change",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "name": "→ data.l3",
+        "rules": [
+            {
+                "t": "set",
+                "p": "data.l3",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 340,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c5b4ccb9ef776376",
+        "type": "change",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "name": "→ data.ac3",
+        "rules": [
+            {
+                "t": "set",
+                "p": "data.ac3",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 350,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d35cda27d1b68f27",
+        "type": "change",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "name": "→ data.soc",
+        "rules": [
+            {
+                "t": "set",
+                "p": "data.soc",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 350,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "90e76c982c2ae8f8",
+        "type": "change",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "name": "→ data.bp",
+        "rules": [
+            {
+                "t": "set",
+                "p": "data.bp",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 350,
+        "y": 400,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "207fe3b0bc1becc1",
+        "type": "change",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "name": "→ data.rly2",
+        "rules": [
+            {
+                "t": "set",
+                "p": "data.rly2",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 350,
+        "y": 460,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "bdc7a9b28f6ecaf5",
+        "type": "change",
+        "z": "224cfad3ce47e7ce",
+        "g": "52eb4548c7772ca1",
+        "name": "→ data.feed",
+        "rules": [
+            {
+                "t": "set",
+                "p": "data.feed",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 349,
+        "y": 519,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2c4fd58b3ab778d4",
+        "type": "bigtimer",
+        "z": "224cfad3ce47e7ce",
+        "g": "100b19a6e99d2564",
+        "outtopic": "",
+        "outpayload1": "1",
+        "outpayload2": "0",
+        "name": "Weekday (Solarnoon-1 → Sunset)",
+        "comment": "Weekdays only: allow HP from 11:00 (PV surplus usually available from mid-morning onward)",
+        "lat": "49.94657",
+        "lon": "18.18335",
+        "starttime": "5002",
+        "endtime": "5004",
+        "starttime2": 0,
+        "endtime2": 0,
+        "startoff": "-60",
+        "endoff": 0,
+        "startoff2": 0,
+        "endoff2": 0,
+        "offs": "1",
+        "outtext1": "",
+        "outtext2": "",
+        "timeout": 1440,
+        "sun": false,
+        "mon": true,
+        "tue": true,
+        "wed": true,
+        "thu": true,
+        "fri": true,
+        "sat": false,
+        "jan": true,
+        "feb": true,
+        "mar": true,
+        "apr": true,
+        "may": true,
+        "jun": true,
+        "jul": true,
+        "aug": true,
+        "sep": true,
+        "oct": true,
+        "nov": true,
+        "dec": true,
+        "day1": 0,
+        "month1": 0,
+        "day2": 0,
+        "month2": 0,
+        "day3": 0,
+        "month3": 0,
+        "day4": 0,
+        "month4": 0,
+        "day5": 0,
+        "month5": 0,
+        "day6": 0,
+        "month6": 0,
+        "day7": 0,
+        "month7": 0,
+        "day8": 0,
+        "month8": 0,
+        "day9": 0,
+        "month9": 0,
+        "day10": 0,
+        "month10": 0,
+        "day11": 0,
+        "month11": 0,
+        "day12": 0,
+        "month12": 0,
+        "d1": 0,
+        "w1": 0,
+        "d2": 0,
+        "w2": 0,
+        "d3": 0,
+        "w3": 0,
+        "d4": 0,
+        "w4": 0,
+        "d5": 0,
+        "w5": 0,
+        "d6": 0,
+        "w6": 0,
+        "xday1": 0,
+        "xmonth1": 0,
+        "xday2": 0,
+        "xmonth2": 0,
+        "xday3": 0,
+        "xmonth3": 0,
+        "xday4": 0,
+        "xmonth4": 0,
+        "xday5": 0,
+        "xmonth5": 0,
+        "xday6": 0,
+        "xmonth6": 0,
+        "xday7": 0,
+        "xmonth7": 0,
+        "xday8": 0,
+        "xmonth8": 0,
+        "xday9": 0,
+        "xmonth9": 0,
+        "xday10": 0,
+        "xmonth10": 0,
+        "xday11": 0,
+        "xmonth11": 0,
+        "xday12": 0,
+        "xmonth12": 0,
+        "xd1": 0,
+        "xw1": 0,
+        "xd2": 0,
+        "xw2": 0,
+        "xd3": 0,
+        "xw3": 0,
+        "xd4": 0,
+        "xw4": 0,
+        "xd5": 0,
+        "xw5": 0,
+        "xd6": 0,
+        "xw6": 0,
+        "suspend": false,
+        "random": false,
+        "randon1": false,
+        "randoff1": false,
+        "randon2": false,
+        "randoff2": false,
+        "repeat": false,
+        "atstart": true,
+        "odd": false,
+        "even": false,
+        "x": 660,
+        "y": 160,
+        "wires": [
+            [
+                "ee8da4f046593737"
+            ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "c384899a2038e902",
+        "type": "bigtimer",
+        "z": "224cfad3ce47e7ce",
+        "g": "100b19a6e99d2564",
+        "outtopic": "",
+        "outpayload1": "1",
+        "outpayload2": "0",
+        "name": "Weekend (sunrise → sunset)",
+        "comment": "Sat+Sun: allow HP from sunrise (hot water can be used throughout the day)",
+        "lat": "49.94657",
+        "lon": "18.18335",
+        "starttime": "5003",
+        "endtime": "5004",
+        "starttime2": 0,
+        "endtime2": 0,
+        "startoff": "0",
+        "endoff": 0,
+        "startoff2": 0,
+        "endoff2": 0,
+        "offs": "1",
+        "outtext1": "",
+        "outtext2": "",
+        "timeout": 1440,
+        "sun": true,
+        "mon": false,
+        "tue": false,
+        "wed": false,
+        "thu": false,
+        "fri": false,
+        "sat": true,
+        "jan": true,
+        "feb": true,
+        "mar": true,
+        "apr": true,
+        "may": true,
+        "jun": true,
+        "jul": true,
+        "aug": true,
+        "sep": true,
+        "oct": true,
+        "nov": true,
+        "dec": true,
+        "day1": 0,
+        "month1": 0,
+        "day2": 0,
+        "month2": 0,
+        "day3": 0,
+        "month3": 0,
+        "day4": 0,
+        "month4": 0,
+        "day5": 0,
+        "month5": 0,
+        "day6": 0,
+        "month6": 0,
+        "day7": 0,
+        "month7": 0,
+        "day8": 0,
+        "month8": 0,
+        "day9": 0,
+        "month9": 0,
+        "day10": 0,
+        "month10": 0,
+        "day11": 0,
+        "month11": 0,
+        "day12": 0,
+        "month12": 0,
+        "d1": 0,
+        "w1": 0,
+        "d2": 0,
+        "w2": 0,
+        "d3": 0,
+        "w3": 0,
+        "d4": 0,
+        "w4": 0,
+        "d5": 0,
+        "w5": 0,
+        "d6": 0,
+        "w6": 0,
+        "xday1": 0,
+        "xmonth1": 0,
+        "xday2": 0,
+        "xmonth2": 0,
+        "xday3": 0,
+        "xmonth3": 0,
+        "xday4": 0,
+        "xmonth4": 0,
+        "xday5": 0,
+        "xmonth5": 0,
+        "xday6": 0,
+        "xmonth6": 0,
+        "xday7": 0,
+        "xmonth7": 0,
+        "xday8": 0,
+        "xmonth8": 0,
+        "xday9": 0,
+        "xmonth9": 0,
+        "xday10": 0,
+        "xmonth10": 0,
+        "xday11": 0,
+        "xmonth11": 0,
+        "xday12": 0,
+        "xmonth12": 0,
+        "xd1": 0,
+        "xw1": 0,
+        "xd2": 0,
+        "xw2": 0,
+        "xd3": 0,
+        "xw3": 0,
+        "xd4": 0,
+        "xw4": 0,
+        "xd5": 0,
+        "xw5": 0,
+        "xd6": 0,
+        "xw6": 0,
+        "suspend": false,
+        "random": false,
+        "randon1": false,
+        "randoff1": false,
+        "randon2": false,
+        "randoff2": false,
+        "repeat": false,
+        "atstart": true,
+        "odd": false,
+        "even": false,
+        "x": 640,
+        "y": 240,
+        "wires": [
+            [
+                "5b760ea89502b5e7"
+            ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "ee8da4f046593737",
+        "type": "change",
+        "z": "224cfad3ce47e7ce",
+        "g": "100b19a6e99d2564",
+        "name": "→ data.day",
+        "rules": [
+            {
+                "t": "set",
+                "p": "data.day",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 910,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5b760ea89502b5e7",
+        "type": "change",
+        "z": "224cfad3ce47e7ce",
+        "g": "100b19a6e99d2564",
+        "name": "→ data.weekend",
+        "rules": [
+            {
+                "t": "set",
+                "p": "data.weekend",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 930,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fc69eaf97578a11a",
+        "type": "inject",
+        "z": "224cfad3ce47e7ce",
+        "g": "f16635b09b6de84c",
+        "name": "Tick (10s)",
+        "props": [],
+        "repeat": "10",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 590,
+        "y": 520,
+        "wires": [
+            [
+                "9f388f73cbf1bb37"
+            ]
+        ]
+    },
+    {
+        "id": "eb6c33040cd236f9",
+        "type": "rbe",
+        "z": "224cfad3ce47e7ce",
+        "g": "f16635b09b6de84c",
+        "name": "Block unless changed",
+        "func": "rbe",
+        "gap": "",
+        "start": "",
+        "inout": "out",
+        "septopics": true,
+        "property": "payload",
+        "topi": "topic",
+        "x": 1040,
+        "y": 520,
+        "wires": [
+            [
+                "a25975fb2a74e8f1"
+            ]
+        ]
+    },
+    {
+        "id": "a25975fb2a74e8f1",
+        "type": "victron-output-relay",
+        "z": "224cfad3ce47e7ce",
+        "g": "f16635b09b6de84c",
+        "service": "com.victronenergy.system/0",
+        "path": "/Relay/1/State",
+        "serviceObj": {
+            "service": "com.victronenergy.system/0",
+            "name": "Venus device"
+        },
+        "pathObj": {
+            "path": "/Relay/1/State",
+            "type": "enum",
+            "name": "Venus relay 2 state",
+            "enum": {
+                "0": "Open",
+                "1": "Closed"
+            },
+            "mode": "both"
+        },
+        "initial": 0,
+        "name": "Venus Relay 2",
+        "onlyChanges": false,
+        "roundValues": "no",
+        "rateLimit": 0,
+        "outputs": 0,
+        "conditionalMode": false,
+        "condition1Operator": ">",
+        "condition2Enabled": false,
+        "condition2Service": "",
+        "condition2Path": "",
+        "condition2Operator": ">",
+        "logicOperator": "AND",
+        "outputTrue": "true",
+        "outputFalse": "false",
+        "outputOnChange": false,
+        "debounce": 2000,
+        "x": 1260,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "a10b2fdc812365b4",
+        "type": "debug",
+        "z": "224cfad3ce47e7ce",
+        "g": "f16635b09b6de84c",
+        "name": "Action Log",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1010,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "9f388f73cbf1bb37",
+        "type": "function",
+        "z": "224cfad3ce47e7ce",
+        "g": "f16635b09b6de84c",
+        "name": "Evaluate And Control",
+        "func": "// ── Read inputs from flow context ───────────────────────────────\nconst data    = flow.get(\"data\") || {};\nconst l1      = Number(data.l1      || 0);   // Grid L1 [W], negative = export\nconst l2      = Number(data.l2      || 0);   // Grid L2 [W]\nconst l3      = Number(data.l3      || 0);   // Grid L3 [W]\nconst soc     = Number(data.soc     || 0);   // Battery SOC [%]\nconst bp      = Number(data.bp      || 0);   // Battery power [W]\nconst fd      = Number(data.feed    || 0);   // 0=export OK, 1=prevent export\nconst rly2    = Number(data.rly2    || 0);   // Relay: 0=off, 1=on\nconst day     = Number(data.day     || 0);   // 1=weekday active window (11:00→sunset)\nconst weekend = Number(data.weekend || 0);   // 1=Sat/Sun active window (sunrise→sunset)\nconst hp      = Number(data.hp      || 2400); // Est. heatpump consumption [W]\n\n// OR logic: active if weekday window OR weekend window\nconst isActive = (day === 1) || (weekend === 1);\n\nlet counter    = context.get(\"counter\") || 0;\nconst ON_THRESH  =  72;\nconst OFF_THRESH = -72;\nconst MAX_CNT    = ON_THRESH  + 10;\nconst MIN_CNT    = OFF_THRESH - 10;\n\n// ── Emergency: battery discharging at very high rate ────────────\nif (bp < -10000) { counter = ON_THRESH + 1; }\n\n// ── Relay OFF: decide whether to turn ON ────────────────────────\nif (rly2 === 0) {\n    if (isActive) {\n        if (fd === 0) {\n            // Grid export OK: check surplus covers HP even when running\n            if ((l1 + l2 + l3 + hp) < 0) counter += 2;\n            else                          counter -= 3;\n        } else {\n            // Grid export prevented: use SOC as proxy\n            if (soc > 66) counter += 2;\n            else          counter -= 3;\n        }\n    } else {\n        // Outside active window (night / before 11:00 on weekdays)\n        counter -= 5;\n    }\n}\n\n// ── Relay ON: decide whether to keep ON (or turn OFF) ───────────\nif (rly2 === 1) {\n    if (isActive) {\n        if (fd === 0) {\n            if ((l1 + l2 + l3) < -100 && soc > 90) counter += 1;\n            else                                     counter -= 1;\n        } else {\n            if (soc > 66) counter += 1;\n            else          counter -= 1;\n        }\n    } else {\n        // Outside active window: turn off\n        counter -= 3;\n    }\n}\n\n// ── Clamp ────────────────────────────────────────────────────────\ncounter = Math.max(MIN_CNT, Math.min(MAX_CNT, counter));\nconst displayCounter = counter;\n\n// ── Output ───────────────────────────────────────────────────────\nlet command = null;\nif (counter >= ON_THRESH) {\n    command = 1;\n    context.set(\"counter\", Math.round(counter / 2));\n} else if (counter <= OFF_THRESH) {\n    command = 0;\n    context.set(\"counter\", Math.round(counter / 2));\n} else {\n    context.set(\"counter\", counter);\n}\n\n// ── Node status ──────────────────────────────────────────────────\nconst modeStr = weekend === 1 ? \"wknd\" : (day === 1 ? \"day\" : \"off-time\");\nnode.status({\n    fill:  rly2 === 1 ? \"green\" : \"gray\",\n    shape: \"dot\",\n    text:  \"Cnt:\" + displayCounter\n         + \" | \" + (rly2 === 1 ? \"ON\" : \"OFF\")\n         + \" | SOC:\" + soc + \"%\"\n         + \" | \" + modeStr\n});\n\nif (command !== null) { return { payload: command }; }\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 800,
+        "y": 520,
+        "wires": [
+            [
+                "eb6c33040cd236f9",
+                "a10b2fdc812365b4"
+            ]
+        ]
+    },
+    {
+        "id": "init_inject",
+        "type": "inject",
+        "z": "224cfad3ce47e7ce",
+        "g": "100b19a6e99d2564",
+        "name": "Boot Init",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0,
+        "topic": "",
+        "x": 600,
+        "y": 100,
+        "wires": [
+            [
+                "init_function"
+            ]
+        ]
+    },
+    {
+        "id": "init_function",
+        "type": "function",
+        "z": "224cfad3ce47e7ce",
+        "g": "100b19a6e99d2564",
+        "name": "Set Default Variables",
+        "func": "// Bezpečně načteme existující data (pokud už Victron něco poslal těsně po startu)\n// Pokud data ještě neexistují, vytvoříme nový prázdný objekt.\nlet currentData = flow.get(\"data\") || {};\n\n// Nastavíme výchozí spotřebu tepelného čerpadla (W)\ncurrentData.hp = 2400;\n\n// Uložíme bezpečně zpět do flow kontextu\nflow.set(\"data\", currentData);\n\n// Zobrazení stavu pod nodem pro vizuální kontrolu\nnode.status({fill:\"green\", shape:\"dot\", text:\"Data initialized\"});\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "cb022018d404ed9c",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "@victronenergy/node-red-contrib-victron": "1.6.60",
+            "node-red-contrib-bigtimer": "2.8.6"
+        }
+    }
+]

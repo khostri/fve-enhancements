@@ -6,6 +6,7 @@ Victron CCL->CVL Guard PRO
 - Reacts to BMS CCL limits by adjusting DVCC MaxChargeVoltage (CVL).
 - Follows BMS drops immediately but applies a gradual step-up for ANY voltage increase.
 - Prevents MPPT oscillation (LOOP_DELAY = 4s).
+- Implements an "Equilibrium Deadband" to prevent hunting when the battery is full.
 - Implements log rotation to protect storage.
 - Failsafe behavior: sets safe CVL if BMS disconnects.
 - Restores safest CVL upon script termination.
@@ -33,12 +34,13 @@ DVCC_SERVICE   = "com.victronenergy.settings"
 DVCC_CVL_PATH  = "/Settings/SystemSetup/MaxChargeVoltage"
 
 # Regulation Parameters
-STEP_DOWN   = 0.05   # V - Step down when I > CCL
-STEP_UP     = 0.02   # V - Gradual step up when safe
-BUFFER_A    = 5.0    # A - Safety margin below CCL before releasing
-FAILSAFE_CVL = 55.11 # V - Target CVL if BMS is lost
-LOOP_DELAY  = 4.0    # s - Loop period to allow MPPT reaction
-MIN_SAFE_V  = 52.0   # V - Hard bottom limit for CVL
+STEP_DOWN     = 0.05   # V - Step down when I > CCL
+STEP_UP       = 0.02   # V - Gradual step up when safe
+BUFFER_A      = 5.0    # A - Safety margin below CCL before releasing limits
+EQUILIBRIUM_A = 8.0    # A - Deadband tolerance to prevent micro-hunting when battery is full
+FAILSAFE_CVL  = 55.00  # V - Target CVL if BMS is lost
+LOOP_DELAY    = 4.0    # s - Loop period to allow MPPT reaction
+MIN_SAFE_V    = 52.0   # V - Hard bottom limit for CVL
 
 STATUS_FILE = "/data/ccl_guard.status"
 LOG_FILE    = "/data/log/ccl_cvl_guard.log"
@@ -160,15 +162,18 @@ def main():
             current_target_v = cvl_bms
             reason = "BMS DROPPED LIMIT"
 
-        # 2. Regulation Logic
-        if actual_i is not None and actual_i > ccl:
-            # Current exceeded, force voltage down
+        # 2. Regulation Logic with Equilibrium Deadband
+        # Effective CCL ensures we don't fight tiny currents when BMS asks for 0A or very low CCL
+        effective_ccl = max(ccl, EQUILIBRIUM_A) if ccl is not None else EQUILIBRIUM_A
+
+        if actual_i is not None and actual_i > effective_ccl:
+            # Current exceeded effective limit, force voltage down
             current_target_v -= STEP_DOWN
             is_throttling = True
             reason = "THROTTLING (I > CCL)"
             
         elif actual_i is not None and actual_i < (ccl - BUFFER_A):
-            # Current is safe. Are we below the target BMS limit?
+            # Current is safely below the limit (or discharging slightly)
             if current_target_v < cvl_bms:
                 # Step up gradually regardless of whether BMS raised it or we were throttling
                 current_target_v += STEP_UP
@@ -183,9 +188,9 @@ def main():
                 if reason == "NONE":
                     reason = "FOLLOWING BMS"
         else:
-            # Inside the buffer zone (CCL - BUFFER_A <= I <= CCL)
+            # Inside the deadband zone (ccl - BUFFER_A <= actual_i <= effective_ccl)
             if reason == "NONE":
-                reason = "HOLDING (in buffer zone)"
+                reason = "HOLDING (equilibrium deadband)"
 
         # 3. Apply Hard Limits
         current_target_v = round(min(max(current_target_v, MIN_SAFE_V), cvl_bms), 2)
