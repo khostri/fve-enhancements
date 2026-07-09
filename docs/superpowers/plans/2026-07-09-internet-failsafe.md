@@ -377,6 +377,8 @@ git commit -m "test: add reusable Node-RED flow structural validator"
 
 - [ ] **Step 1: Write `scripts/build-flow.js`**
 
+> **Note (post-review correction):** the listing below reflects the corrected version after a final whole-branch review caught a Critical bug in an earlier draft — the action nodes must NOT have an `initial` property. `node-red-contrib-victron`'s output-node base class writes `initial` to the live dbus unconditionally at deploy/restart time, completely bypassing the `DRY_RUN` gate (which only affects the message-triggered write path). With `initial` present, importing or even dry-run-rehearsing the flow — or any later Node-RED restart — would immediately zero the live grid setpoint. The listing below (and the actual `scripts/build-flow.js` in the repo, which is the source of truth) has `initial` removed and calls the Task 2 validator internally before writing, failing closed on any validation error.
+
 ```js
 #!/usr/bin/env node
 'use strict';
@@ -384,6 +386,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { evaluateTick } = require('./watchdog-logic');
+const { validateFlow } = require('./validate-flow');
 
 // Flip to false only after the Task 4 dry-run rehearsal succeeds, then rerun this script.
 const DRY_RUN = true;
@@ -536,7 +539,6 @@ const flow = [
             name: 'Grid set-point (W)',
             mode: 'both'
         },
-        initial: 0,
         name: 'Set Grid Setpoint = 0',
         onlyChanges: false,
         roundValues: 'no',
@@ -574,7 +576,6 @@ const flow = [
             },
             mode: 'both'
         },
-        initial: 0,
         name: 'Set DC Feed-In Disabled',
         onlyChanges: false,
         roundValues: 'no',
@@ -613,6 +614,15 @@ const flow = [
     }
 ];
 
+const heatpumpNodes = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'heatpump_relay_control.json'), 'utf8'));
+const heatpumpIds = new Set(heatpumpNodes.map(n => n.id));
+const validationErrors = validateFlow(flow, [heatpumpIds]);
+if (validationErrors.length) {
+    console.error(`FAIL: generated flow failed validation (${validationErrors.length} problem(s)) — not writing internet_failsafe.json:`);
+    for (const e of validationErrors) console.error(' - ' + e);
+    process.exit(1);
+}
+
 const outPath = path.join(__dirname, '..', 'internet_failsafe.json');
 fs.writeFileSync(outPath, JSON.stringify(flow, null, 4) + '\n');
 console.log('Wrote ' + outPath + ' (' + flow.length + ' nodes/config entries), DRY_RUN=' + DRY_RUN);
@@ -621,14 +631,14 @@ console.log('Wrote ' + outPath + ' (' + flow.length + ' nodes/config entries), D
 - [ ] **Step 2: Run the build script**
 
 Run: `node scripts/build-flow.js`
-Expected: `Wrote .../internet_failsafe.json (10 nodes/config entries), DRY_RUN=true`
+Expected: `Wrote .../internet_failsafe.json (10 nodes/config entries), DRY_RUN=true` — this now only prints after the build script's internal `validateFlow` call passes; a validation error prints itemized errors and exits 1 without writing the file.
 
-- [ ] **Step 3: Validate the generated flow — self-consistency**
+- [ ] **Step 3: Validate the generated flow — self-consistency (belt-and-suspenders; the build script already validates internally)**
 
 Run: `node scripts/validate-flow.js internet_failsafe.json`
 Expected: `OK: internet_failsafe.json is structurally valid (10 nodes, 0 id collisions)`
 
-- [ ] **Step 4: Validate against the already-deployed flow — no ID collisions**
+- [ ] **Step 4: Validate against the already-deployed flow — no ID collisions (belt-and-suspenders; the build script already checks this internally)**
 
 Run: `node scripts/validate-flow.js internet_failsafe.json heatpump_relay_control.json`
 Expected: `OK: internet_failsafe.json is structurally valid (10 nodes, 0 id collisions)`
@@ -638,7 +648,7 @@ If this fails with a collision error, re-run Step 2 (regenerates fresh random ID
 - [ ] **Step 5: Run the full test suite once more**
 
 Run: `node --test` (bare — Node's default test-file discovery scans the project for `*.test.js` files; passing `scripts/` as a bare directory argument is treated as a module entry point on Node v25 and fails with "Cannot find module")
-Expected: all `watchdog-logic.test.js` and `validate-flow.test.js` tests pass, 0 failures.
+Expected: all `watchdog-logic.test.js`, `validate-flow.test.js`, and `build-flow.test.js` (added post-review as a regression guard for the `initial` bug above — runs the build script and asserts the generated action nodes have no `initial` key) tests pass, 0 failures.
 
 - [ ] **Step 6: Commit — first working code version**
 
