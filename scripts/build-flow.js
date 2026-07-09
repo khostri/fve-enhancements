@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { evaluateTick } = require('./watchdog-logic');
+const { validateFlow } = require('./validate-flow');
 
 // Flip to false only after the Task 4 dry-run rehearsal succeeds, then rerun this script.
 const DRY_RUN = true;
@@ -156,7 +157,6 @@ const flow = [
             name: 'Grid set-point (W)',
             mode: 'both'
         },
-        initial: 0,
         name: 'Set Grid Setpoint = 0',
         onlyChanges: false,
         roundValues: 'no',
@@ -194,7 +194,6 @@ const flow = [
             },
             mode: 'both'
         },
-        initial: 0,
         name: 'Set DC Feed-In Disabled',
         onlyChanges: false,
         roundValues: 'no',
@@ -232,6 +231,15 @@ const flow = [
         wires: []
     }
 ];
+
+const heatpumpNodes = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'heatpump_relay_control.json'), 'utf8'));
+const heatpumpIds = new Set(heatpumpNodes.map(n => n.id));
+const validationErrors = validateFlow(flow, [heatpumpIds]);
+if (validationErrors.length) {
+    console.error(`FAIL: generated flow failed validation (${validationErrors.length} problem(s)) — not writing internet_failsafe.json:`);
+    for (const e of validationErrors) console.error(' - ' + e);
+    process.exit(1);
+}
 
 const outPath = path.join(__dirname, '..', 'internet_failsafe.json');
 fs.writeFileSync(outPath, JSON.stringify(flow, null, 4) + '\n');

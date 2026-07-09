@@ -1,6 +1,6 @@
 [
     {
-        "id": "e8ea6955e297c4b6",
+        "id": "2eff2c5ab390fb62",
         "type": "tab",
         "label": "Internet Failsafe",
         "disabled": false,
@@ -8,17 +8,17 @@
         "env": []
     },
     {
-        "id": "3acc2d0a1443e273",
+        "id": "66a5a65e728d4ec5",
         "type": "group",
-        "z": "e8ea6955e297c4b6",
+        "z": "2eff2c5ab390fb62",
         "name": "Connectivity Check",
         "style": {
             "label": true
         },
         "nodes": [
-            "09fd72965b238141",
-            "a8d7c74e4ea09a28",
-            "ed199a07e64d08a4"
+            "7738d6747b23eb03",
+            "29f079d7fc3c6f82",
+            "9805fffab4cda56d"
         ],
         "x": 54,
         "y": 59,
@@ -26,18 +26,18 @@
         "h": 160
     },
     {
-        "id": "c74aafed00333a4e",
+        "id": "293a03d234a34c28",
         "type": "group",
-        "z": "e8ea6955e297c4b6",
+        "z": "2eff2c5ab390fb62",
         "name": "Watchdog + Failsafe Actions",
         "style": {
             "label": true
         },
         "nodes": [
-            "1d8264bd5a0056b4",
-            "43f3e7f91b528a76",
-            "b99aad8024a2f322",
-            "2c374786ec9d5525"
+            "573600e9fe29577e",
+            "ee73011e29675f88",
+            "a0b6d5567590ac7c",
+            "2b0f0a9b02c6fb46"
         ],
         "x": 494,
         "y": 59,
@@ -45,10 +45,10 @@
         "h": 220
     },
     {
-        "id": "09fd72965b238141",
+        "id": "7738d6747b23eb03",
         "type": "inject",
-        "z": "e8ea6955e297c4b6",
-        "g": "3acc2d0a1443e273",
+        "z": "2eff2c5ab390fb62",
+        "g": "66a5a65e728d4ec5",
         "name": "Tick (30s)",
         "props": [],
         "repeat": "30",
@@ -60,15 +60,15 @@
         "y": 100,
         "wires": [
             [
-                "a8d7c74e4ea09a28"
+                "29f079d7fc3c6f82"
             ]
         ]
     },
     {
-        "id": "a8d7c74e4ea09a28",
+        "id": "29f079d7fc3c6f82",
         "type": "http request",
-        "z": "e8ea6955e297c4b6",
-        "g": "3acc2d0a1443e273",
+        "z": "2eff2c5ab390fb62",
+        "g": "66a5a65e728d4ec5",
         "name": "Check VRM",
         "method": "HEAD",
         "ret": "txt",
@@ -86,33 +86,33 @@
         "y": 100,
         "wires": [
             [
-                "1d8264bd5a0056b4"
+                "573600e9fe29577e"
             ]
         ]
     },
     {
-        "id": "ed199a07e64d08a4",
+        "id": "9805fffab4cda56d",
         "type": "catch",
-        "z": "e8ea6955e297c4b6",
-        "g": "3acc2d0a1443e273",
+        "z": "2eff2c5ab390fb62",
+        "g": "66a5a65e728d4ec5",
         "name": "VRM Check Error",
         "scope": [
-            "a8d7c74e4ea09a28"
+            "29f079d7fc3c6f82"
         ],
         "uncaught": false,
         "x": 300,
         "y": 160,
         "wires": [
             [
-                "1d8264bd5a0056b4"
+                "573600e9fe29577e"
             ]
         ]
     },
     {
-        "id": "1d8264bd5a0056b4",
+        "id": "573600e9fe29577e",
         "type": "function",
-        "z": "e8ea6955e297c4b6",
-        "g": "c74aafed00333a4e",
+        "z": "2eff2c5ab390fb62",
+        "g": "293a03d234a34c28",
         "name": "Watchdog Evaluate",
         "func": "// --- pure decision logic, byte-identical to scripts/watchdog-logic.js (embedded by scripts/build-flow.js) ---\nfunction evaluateTick(state, success, dryRun) {\n    const THRESHOLD = 10;\n    const ACTION_LABELS = [\n        'AcPowerSetPoint=0',\n        'OvervoltageFeedIn=0',\n        'Restore PV (not configured)'\n    ];\n\n    let { failCount, fired } = state;\n    let recovered = false;\n    let triggered = false;\n\n    if (success) {\n        if (fired) recovered = true;\n        failCount = 0;\n        fired = false;\n    } else {\n        failCount += 1;\n        if (failCount >= THRESHOLD && !fired) {\n            triggered = true;\n            fired = true;\n        }\n    }\n\n    let statusText;\n    if (triggered) {\n        statusText = (dryRun ? 'DRY-RUN: would fire failsafe (' : 'FAILSAFE FIRED: (') + ACTION_LABELS.join(', ') + ')';\n    } else if (recovered) {\n        statusText = 'Recovered - connectivity restored';\n    } else if (!success) {\n        statusText = 'Check failed (' + failCount + '/' + THRESHOLD + ')';\n    } else {\n        statusText = 'OK';\n    }\n\n    return { state: { failCount, fired }, triggered, recovered, statusText };\n}\n\n// --- Node-RED wrapper ---\nconst DRY_RUN = true;\n\nconst success = typeof msg.statusCode === \"number\" && msg.statusCode >= 200 && msg.statusCode < 300;\nconst prevState = context.get(\"state\") || { failCount: 0, fired: false };\n\nconst result = evaluateTick(prevState, success, DRY_RUN);\ncontext.set(\"state\", result.state);\n\nnode.status({\n    fill: result.triggered ? \"red\" : (success ? \"green\" : \"yellow\"),\n    shape: \"dot\",\n    text: result.statusText\n});\n\nconst doFire = result.triggered && !DRY_RUN;\nconst action1 = doFire ? { payload: 0 } : null;\nconst action2 = doFire ? { payload: 0 } : null;\nconst action3 = null; // placeholder for future PV-restore action - see spec Action 3\nconst statusMsg = { payload: result.statusText };\n\nreturn [action1, action2, action3, statusMsg];\n",
         "outputs": 4,
@@ -125,22 +125,22 @@
         "y": 100,
         "wires": [
             [
-                "43f3e7f91b528a76"
+                "ee73011e29675f88"
             ],
             [
-                "b99aad8024a2f322"
+                "a0b6d5567590ac7c"
             ],
             [],
             [
-                "2c374786ec9d5525"
+                "2b0f0a9b02c6fb46"
             ]
         ]
     },
     {
-        "id": "43f3e7f91b528a76",
+        "id": "ee73011e29675f88",
         "type": "victron-output-settings",
-        "z": "e8ea6955e297c4b6",
-        "g": "c74aafed00333a4e",
+        "z": "2eff2c5ab390fb62",
+        "g": "293a03d234a34c28",
         "service": "com.victronenergy.settings",
         "path": "/Settings/CGwacs/AcPowerSetPoint",
         "serviceObj": {
@@ -153,7 +153,6 @@
             "name": "Grid set-point (W)",
             "mode": "both"
         },
-        "initial": 0,
         "name": "Set Grid Setpoint = 0",
         "onlyChanges": false,
         "roundValues": "no",
@@ -175,10 +174,10 @@
         "wires": []
     },
     {
-        "id": "b99aad8024a2f322",
+        "id": "a0b6d5567590ac7c",
         "type": "victron-output-settings",
-        "z": "e8ea6955e297c4b6",
-        "g": "c74aafed00333a4e",
+        "z": "2eff2c5ab390fb62",
+        "g": "293a03d234a34c28",
         "service": "com.victronenergy.settings",
         "path": "/Settings/CGwacs/OvervoltageFeedIn",
         "serviceObj": {
@@ -195,7 +194,6 @@
             },
             "mode": "both"
         },
-        "initial": 0,
         "name": "Set DC Feed-In Disabled",
         "onlyChanges": false,
         "roundValues": "no",
@@ -217,10 +215,10 @@
         "wires": []
     },
     {
-        "id": "2c374786ec9d5525",
+        "id": "2b0f0a9b02c6fb46",
         "type": "debug",
-        "z": "e8ea6955e297c4b6",
-        "g": "c74aafed00333a4e",
+        "z": "2eff2c5ab390fb62",
+        "g": "293a03d234a34c28",
         "name": "Watchdog Status",
         "active": true,
         "tosidebar": true,

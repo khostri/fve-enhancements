@@ -1,5 +1,6 @@
 'use strict';
 
+// Must remain fully self-contained (only its own params/local declarations) — scripts/build-flow.js embeds this via .toString() into a Node-RED node.
 function evaluateTick(state, success, dryRun) {
     const THRESHOLD = 10;
     const ACTION_LABELS = [

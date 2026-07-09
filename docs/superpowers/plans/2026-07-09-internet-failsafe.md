@@ -637,7 +637,7 @@ If this fails with a collision error, re-run Step 2 (regenerates fresh random ID
 
 - [ ] **Step 5: Run the full test suite once more**
 
-Run: `node --test scripts/`
+Run: `node --test` (bare — Node's default test-file discovery scans the project for `*.test.js` files; passing `scripts/` as a bare directory argument is treated as a module entry point on Node v25 and fails with "Cannot find module")
 Expected: all `watchdog-logic.test.js` and `validate-flow.test.js` tests pass, 0 failures.
 
 - [ ] **Step 6: Commit — first working code version**
