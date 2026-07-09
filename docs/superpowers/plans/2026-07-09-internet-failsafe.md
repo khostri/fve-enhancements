@@ -378,6 +378,8 @@ git commit -m "test: add reusable Node-RED flow structural validator"
 - [ ] **Step 1: Write `scripts/build-flow.js`**
 
 > **Note (post-review correction):** the listing below reflects the corrected version after a final whole-branch review caught a Critical bug in an earlier draft — the action nodes must NOT have an `initial` property. `node-red-contrib-victron`'s output-node base class writes `initial` to the live dbus unconditionally at deploy/restart time, completely bypassing the `DRY_RUN` gate (which only affects the message-triggered write path). With `initial` present, importing or even dry-run-rehearsing the flow — or any later Node-RED restart — would immediately zero the live grid setpoint. The listing below (and the actual `scripts/build-flow.js` in the repo, which is the source of truth) has `initial` removed and calls the Task 2 validator internally before writing, failing closed on any validation error.
+>
+> **Note (post-deployment field fix):** during the Task 4 dry-run rehearsal on the real Cerbo, the "Watchdog Evaluate" function was observed receiving TWO messages per failed 30s tick (both same-second, every tick, for a DNS-resolution-failure test) — the `http request` node's own output and the `catch` node both fired for the same underlying failed request, doubling the effective fail-counter rate (5-minute threshold reached in ~2.5 minutes instead). Fixed by de-duplicating on `msg._msgid` in the wrapper (both deliveries carry the same id, since they originate from the same underlying message). The listing below and `scripts/build-flow.js` include this guard; `scripts/build-flow.test.js` asserts the generated function contains it.
 
 ```js
 #!/usr/bin/env node
@@ -413,6 +415,17 @@ ${evaluateTickSource}
 
 // --- Node-RED wrapper ---
 const DRY_RUN = ${DRY_RUN};
+
+// Node-RED's http request node can deliver the SAME failed check twice for one
+// underlying request: once via its own output and once via the catch node
+// (observed in the field: connection/DNS errors produced two identical-second
+// messages per 30s tick, doubling the effective failure rate). Both deliveries
+// carry the same _msgid, so ignore an immediate repeat.
+const lastMsgId = context.get("lastMsgId");
+if (msg._msgid && msg._msgid === lastMsgId) {
+    return [null, null, null, null];
+}
+context.set("lastMsgId", msg._msgid);
 
 const success = typeof msg.statusCode === "number" && msg.statusCode >= 200 && msg.statusCode < 300;
 const prevState = context.get("state") || { failCount: 0, fired: false };

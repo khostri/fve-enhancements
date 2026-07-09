@@ -34,4 +34,9 @@ test('build-flow.js generates a flow with correct, safe action node content', ()
     const evalNode = flow.find(n => n.type === 'function' && n.name === 'Watchdog Evaluate');
     assert.ok(evalNode, 'Watchdog Evaluate function node not found');
     assert.match(evalNode.func, /const DRY_RUN = true;/, 'generated flow should default to DRY_RUN = true');
+    assert.match(
+        evalNode.func,
+        /lastMsgId/,
+        'generated flow should de-duplicate repeated _msgid deliveries (observed in the field: http request node + catch node both firing for one failed check, doubling the effective failure rate)'
+    );
 });

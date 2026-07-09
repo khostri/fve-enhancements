@@ -32,6 +32,17 @@ ${evaluateTickSource}
 // --- Node-RED wrapper ---
 const DRY_RUN = ${DRY_RUN};
 
+// Node-RED's http request node can deliver the SAME failed check twice for one
+// underlying request: once via its own output and once via the catch node
+// (observed in the field: connection/DNS errors produced two identical-second
+// messages per 30s tick, doubling the effective failure rate). Both deliveries
+// carry the same _msgid, so ignore an immediate repeat.
+const lastMsgId = context.get("lastMsgId");
+if (msg._msgid && msg._msgid === lastMsgId) {
+    return [null, null, null, null];
+}
+context.set("lastMsgId", msg._msgid);
+
 const success = typeof msg.statusCode === "number" && msg.statusCode >= 200 && msg.statusCode < 300;
 const prevState = context.get("state") || { failCount: 0, fired: false };
 
