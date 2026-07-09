@@ -1,0 +1,237 @@
+[
+    {
+        "id": "e8ea6955e297c4b6",
+        "type": "tab",
+        "label": "Internet Failsafe",
+        "disabled": false,
+        "info": "Watches VRM reachability. After 5 minutes unreachable, zeroes ESS grid setpoint and disables DC feed-in so remote-control loss cannot leave the battery selling indefinitely. See docs/superpowers/specs/2026-07-09-internet-failsafe-design.md.",
+        "env": []
+    },
+    {
+        "id": "3acc2d0a1443e273",
+        "type": "group",
+        "z": "e8ea6955e297c4b6",
+        "name": "Connectivity Check",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "09fd72965b238141",
+            "a8d7c74e4ea09a28",
+            "ed199a07e64d08a4"
+        ],
+        "x": 54,
+        "y": 59,
+        "w": 400,
+        "h": 160
+    },
+    {
+        "id": "c74aafed00333a4e",
+        "type": "group",
+        "z": "e8ea6955e297c4b6",
+        "name": "Watchdog + Failsafe Actions",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "1d8264bd5a0056b4",
+            "43f3e7f91b528a76",
+            "b99aad8024a2f322",
+            "2c374786ec9d5525"
+        ],
+        "x": 494,
+        "y": 59,
+        "w": 560,
+        "h": 220
+    },
+    {
+        "id": "09fd72965b238141",
+        "type": "inject",
+        "z": "e8ea6955e297c4b6",
+        "g": "3acc2d0a1443e273",
+        "name": "Tick (30s)",
+        "props": [],
+        "repeat": "30",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 1,
+        "topic": "",
+        "x": 130,
+        "y": 100,
+        "wires": [
+            [
+                "a8d7c74e4ea09a28"
+            ]
+        ]
+    },
+    {
+        "id": "a8d7c74e4ea09a28",
+        "type": "http request",
+        "z": "e8ea6955e297c4b6",
+        "g": "3acc2d0a1443e273",
+        "name": "Check VRM",
+        "method": "HEAD",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "https://vrm.victronenergy.com",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "reqTimeout": 5000,
+        "headers": [],
+        "x": 300,
+        "y": 100,
+        "wires": [
+            [
+                "1d8264bd5a0056b4"
+            ]
+        ]
+    },
+    {
+        "id": "ed199a07e64d08a4",
+        "type": "catch",
+        "z": "e8ea6955e297c4b6",
+        "g": "3acc2d0a1443e273",
+        "name": "VRM Check Error",
+        "scope": [
+            "a8d7c74e4ea09a28"
+        ],
+        "uncaught": false,
+        "x": 300,
+        "y": 160,
+        "wires": [
+            [
+                "1d8264bd5a0056b4"
+            ]
+        ]
+    },
+    {
+        "id": "1d8264bd5a0056b4",
+        "type": "function",
+        "z": "e8ea6955e297c4b6",
+        "g": "c74aafed00333a4e",
+        "name": "Watchdog Evaluate",
+        "func": "// --- pure decision logic, byte-identical to scripts/watchdog-logic.js (embedded by scripts/build-flow.js) ---\nfunction evaluateTick(state, success, dryRun) {\n    const THRESHOLD = 10;\n    const ACTION_LABELS = [\n        'AcPowerSetPoint=0',\n        'OvervoltageFeedIn=0',\n        'Restore PV (not configured)'\n    ];\n\n    let { failCount, fired } = state;\n    let recovered = false;\n    let triggered = false;\n\n    if (success) {\n        if (fired) recovered = true;\n        failCount = 0;\n        fired = false;\n    } else {\n        failCount += 1;\n        if (failCount >= THRESHOLD && !fired) {\n            triggered = true;\n            fired = true;\n        }\n    }\n\n    let statusText;\n    if (triggered) {\n        statusText = (dryRun ? 'DRY-RUN: would fire failsafe (' : 'FAILSAFE FIRED: (') + ACTION_LABELS.join(', ') + ')';\n    } else if (recovered) {\n        statusText = 'Recovered - connectivity restored';\n    } else if (!success) {\n        statusText = 'Check failed (' + failCount + '/' + THRESHOLD + ')';\n    } else {\n        statusText = 'OK';\n    }\n\n    return { state: { failCount, fired }, triggered, recovered, statusText };\n}\n\n// --- Node-RED wrapper ---\nconst DRY_RUN = true;\n\nconst success = typeof msg.statusCode === \"number\" && msg.statusCode >= 200 && msg.statusCode < 300;\nconst prevState = context.get(\"state\") || { failCount: 0, fired: false };\n\nconst result = evaluateTick(prevState, success, DRY_RUN);\ncontext.set(\"state\", result.state);\n\nnode.status({\n    fill: result.triggered ? \"red\" : (success ? \"green\" : \"yellow\"),\n    shape: \"dot\",\n    text: result.statusText\n});\n\nconst doFire = result.triggered && !DRY_RUN;\nconst action1 = doFire ? { payload: 0 } : null;\nconst action2 = doFire ? { payload: 0 } : null;\nconst action3 = null; // placeholder for future PV-restore action - see spec Action 3\nconst statusMsg = { payload: result.statusText };\n\nreturn [action1, action2, action3, statusMsg];\n",
+        "outputs": 4,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 560,
+        "y": 100,
+        "wires": [
+            [
+                "43f3e7f91b528a76"
+            ],
+            [
+                "b99aad8024a2f322"
+            ],
+            [],
+            [
+                "2c374786ec9d5525"
+            ]
+        ]
+    },
+    {
+        "id": "43f3e7f91b528a76",
+        "type": "victron-output-settings",
+        "z": "e8ea6955e297c4b6",
+        "g": "c74aafed00333a4e",
+        "service": "com.victronenergy.settings",
+        "path": "/Settings/CGwacs/AcPowerSetPoint",
+        "serviceObj": {
+            "service": "com.victronenergy.settings",
+            "name": "Venus settings"
+        },
+        "pathObj": {
+            "path": "/Settings/CGwacs/AcPowerSetPoint",
+            "type": "integer",
+            "name": "Grid set-point (W)",
+            "mode": "both"
+        },
+        "initial": 0,
+        "name": "Set Grid Setpoint = 0",
+        "onlyChanges": false,
+        "roundValues": "no",
+        "rateLimit": 0,
+        "outputs": 0,
+        "conditionalMode": false,
+        "condition1Operator": ">",
+        "condition2Enabled": false,
+        "condition2Service": "",
+        "condition2Path": "",
+        "condition2Operator": ">",
+        "logicOperator": "AND",
+        "outputTrue": "true",
+        "outputFalse": "false",
+        "outputOnChange": false,
+        "debounce": 2000,
+        "x": 820,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "b99aad8024a2f322",
+        "type": "victron-output-settings",
+        "z": "e8ea6955e297c4b6",
+        "g": "c74aafed00333a4e",
+        "service": "com.victronenergy.settings",
+        "path": "/Settings/CGwacs/OvervoltageFeedIn",
+        "serviceObj": {
+            "service": "com.victronenergy.settings",
+            "name": "Venus settings"
+        },
+        "pathObj": {
+            "path": "/Settings/CGwacs/OvervoltageFeedIn",
+            "type": "enum",
+            "name": "Feed excess DC-coupled PV into grid",
+            "enum": {
+                "0": "Don't feed excess DC-tied PV into grid",
+                "1": "Feed excess DC-tied PV into the grid"
+            },
+            "mode": "both"
+        },
+        "initial": 0,
+        "name": "Set DC Feed-In Disabled",
+        "onlyChanges": false,
+        "roundValues": "no",
+        "rateLimit": 0,
+        "outputs": 0,
+        "conditionalMode": false,
+        "condition1Operator": ">",
+        "condition2Enabled": false,
+        "condition2Service": "",
+        "condition2Path": "",
+        "condition2Operator": ">",
+        "logicOperator": "AND",
+        "outputTrue": "true",
+        "outputFalse": "false",
+        "outputOnChange": false,
+        "debounce": 2000,
+        "x": 820,
+        "y": 130,
+        "wires": []
+    },
+    {
+        "id": "2c374786ec9d5525",
+        "type": "debug",
+        "z": "e8ea6955e297c4b6",
+        "g": "c74aafed00333a4e",
+        "name": "Watchdog Status",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 820,
+        "y": 180,
+        "wires": []
+    }
+]
