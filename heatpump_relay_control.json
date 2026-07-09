@@ -97,7 +97,7 @@
             "name": "Grid L1 (W)"
         },
         "name": "Grid L1",
-        "onlyChanges": false,
+        "onlyChanges": true,
         "roundValues": "no",
         "rateLimit": 0,
         "outputs": 1,
@@ -157,7 +157,7 @@
             "name": "Grid L2 (W)"
         },
         "name": "Grid L2",
-        "onlyChanges": false,
+        "onlyChanges": true,
         "roundValues": "no",
         "rateLimit": 0,
         "outputs": 1,
@@ -191,7 +191,7 @@
             "name": "Grid L3 (W)"
         },
         "name": "Grid L3",
-        "onlyChanges": false,
+        "onlyChanges": true,
         "roundValues": "no",
         "rateLimit": 0,
         "outputs": 1,
@@ -225,7 +225,7 @@
             "name": "AC Consumption L3 (W)"
         },
         "name": "AC Cons L3",
-        "onlyChanges": false,
+        "onlyChanges": true,
         "roundValues": "no",
         "rateLimit": 0,
         "outputs": 1,
@@ -259,7 +259,7 @@
             "name": "Battery State of Charge (%)"
         },
         "name": "Batery SOC",
-        "onlyChanges": false,
+        "onlyChanges": true,
         "roundValues": "no",
         "rateLimit": 0,
         "outputs": 1,
@@ -293,7 +293,7 @@
             "name": "Battery Power (W)"
         },
         "name": "Batery Pwr",
-        "onlyChanges": false,
+        "onlyChanges": true,
         "roundValues": "no",
         "rateLimit": 0,
         "outputs": 1,
@@ -332,7 +332,7 @@
             "mode": "both"
         },
         "name": "Relay 2 State",
-        "onlyChanges": false,
+        "onlyChanges": true,
         "roundValues": "no",
         "rateLimit": 0,
         "outputs": 1,
@@ -371,7 +371,7 @@
             "mode": "both"
         },
         "name": "Feed In Enabled",
-        "onlyChanges": false,
+        "onlyChanges": true,
         "roundValues": "no",
         "rateLimit": 0,
         "outputs": 1,
