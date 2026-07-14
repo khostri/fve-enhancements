@@ -36,7 +36,7 @@ Last time, Node-RED (now v4.1.1 on this Cerbo) crashed immediately on import, be
 ```
 [Tick 30s]──▶[HTTP HEAD vrm.victronenergy.com]──▶[Watchdog Evaluate]──┬──▶[Action 1: AcPowerSetPoint = 0]
                         │                              ▲              ├──▶[Action 2: OvervoltageFeedIn = 0]
-                        └──(on network error)─▶[Catch node]           ├──▶[Action 3: restore PV — placeholder, unwired]
+                        └──(on network error)─▶[Catch node]           ├──▶[Action 3: exec `dbus -y` restore, all solarcharger Mode=1]──▶[debug: exec output]
                                                                        └──▶[Status/Action debug log]
 ```
 
@@ -50,7 +50,8 @@ One new tab, "Internet Failsafe", containing:
 | Watchdog Evaluate | `function` | Counter, dry-run gate, fire-once/re-arm, produces action messages |
 | Set Grid Setpoint | `victron-output-settings` → `/Settings/CGwacs/AcPowerSetPoint` | Action 1 |
 | Set DC Feed-In Disabled | `victron-output-settings` → `/Settings/CGwacs/OvervoltageFeedIn` | Action 2 |
-| *(unwired placeholder)* | TBD — `victron-output-custom` or a typed control node, once identified | Action 3 |
+| Restore Solar Chargers (dbus, dynamic) | `exec` (core) | Action 3 — runs `dbus -y \| grep com.victronenergy.solarcharger \| awk '{print $1}'` then `dbus -y "$svc" /Mode SetValue 1` for each discovered service |
+| Solar Restore Exec Output | `debug` (sidebar) | Shows the exec node's stdout/stderr/return-code for each firing, for manual verification |
 | Watchdog Status | `debug` (sidebar) | Logs every state transition and dry-run/live actions |
 
 ## Failure detection
@@ -79,7 +80,9 @@ Confirmed via research and cross-checked against the existing heatpump flow's ow
 
 1. **`/Settings/CGwacs/AcPowerSetPoint = 0`** — ESS grid setpoint (W), range −32768..32767. Tells the ESS control loop to stop deliberately importing/exporting at the grid, directly addressing the battery-selling-to-empty incident. Confirmed via Victron community documentation.
 2. **`/Settings/CGwacs/OvervoltageFeedIn = 0`** — DC-coupled PV feed-in enable (`1` = feed excess into grid, `0` = don't). Confirmed correct for this installation (Victron inverter/charger + battery + DC-coupled panels, no AC-coupled inverter) — the AC-coupled equivalent, `/Settings/CGwacs/PreventFeedback`, has inverted logic (`1` = don't feed in) and does not apply here. The existing heatpump flow already reads this same path with matching semantics (`1` = enabled), confirming the enum direction.
-3. **PV production restore — placeholder, not yet implemented.** Not the "stop selling" concern but the opposite: if the provider had curtailed PV production (turned panels off) for a negative-price event and the connection drops while in that state, the failsafe should restore normal production rather than leave it curtailed indefinitely. The exact mechanism is hardware-dependent and not yet known — likely candidates are a `Solarcharger Control` node (DC MPPT charger `Mode`: On/Off) or possibly something under `/Settings/CGwacs/`, but this needs to be confirmed by observing which dbus path actually changes when the provider curtails (e.g. via `dbus-spy` over SSH at the moment of a curtailment event, or the live service/path picker in the Node-RED Victron input node's config UI). Shipped as an unwired slot: the Watchdog Evaluate function already includes it in its action list and status logging (reporting "not yet configured"), so adding it later is a single new output node wired to the function's existing action output — no changes to existing nodes or wiring.
+3. **`com.victronenergy.solarcharger.<instance>` service, path `/Mode`, value `1`.** Confirmed directly by the electricity provider: they showed a screenshot of their own control system curtailing PV production by writing `/solarcharger/<instance>/Mode = 4` (off) and restoring it with `/solarcharger/<instance>/Mode = 1` (normal). The instance number is device-specific and not fixed across installations (and the user's own instance numbers were not confirmed at design time), so rather than hardcoding a `victron-output-settings` node per charger, Action 3 uses a core Node-RED `exec` node to run a shell command on the Cerbo at fire-time: `dbus -y | grep com.victronenergy.solarcharger | awk '{print $1}'` enumerates every currently-connected solar charger service (Venus OS's built-in `dbus` CLI; `dbus -y` alone lists all live D-Bus services), and the loop runs `dbus -y "$svc" /Mode SetValue 1` (sets Mode to `1`) against each one found. This adapts automatically if chargers are added, removed, or renumbered — no flow edit needed. `exec` is a Node-RED core node (bundled with every install), so this does not introduce a new palette dependency, only a new *node type* in this repo's own validator allow-list (see `scripts/validate-flow.js`).
+
+   **On verifying the write with the palette's typed-node UI:** the palette's per-device-type nodes (e.g. a "Solarcharger" input node) populate their Device Select dropdown by scanning the live D-Bus only when you open that node's config panel in the editor — there is no way to feed the `exec` node's output into that picker programmatically. To visually confirm a restore worked using the friendly typed-node UI, add a "Solarcharger" input node in the Node-RED editor (its Device Select dropdown will show your actual connected chargers), watch `/Mode`, and wire it to a debug node. This is optional, for manual verification only, and does not affect the dynamic `exec`-based control path — it must be added by hand after import since it depends on live device instance data.
 
 ### Extensibility
 
@@ -98,4 +101,3 @@ Each action is an independently wired output node fed from the Watchdog Evaluate
 
 - Exact `flows.json` path on this Cerbo (needed for the backup step) — to confirm during implementation/rollout, not blocking the design.
 - Exact node type string for the generic custom output node (`victron-output-custom` is the expected name based on the palette's category-based naming convention, but not yet confirmed against the live palette) — to confirm by inspecting the actual node picker in the Node-RED editor before Action 3 is implemented.
-- PV-restore path (Action 3) — deferred until the user identifies it empirically.
