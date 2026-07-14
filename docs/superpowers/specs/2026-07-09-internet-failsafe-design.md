@@ -100,4 +100,4 @@ Each action is an independently wired output node fed from the Watchdog Evaluate
 ## Open items
 
 - Exact `flows.json` path on this Cerbo (needed for the backup step) — to confirm during implementation/rollout, not blocking the design.
-- Exact node type string for the generic custom output node (`victron-output-custom` is the expected name based on the palette's category-based naming convention, but not yet confirmed against the live palette) — to confirm by inspecting the actual node picker in the Node-RED editor before Action 3 is implemented.
+- Exact node type string for the generic custom output node (`victron-output-custom` is the expected name based on the palette's category-based naming convention, but not yet confirmed against the live palette) — to confirm by inspecting the actual node picker in the Node-RED editor.
