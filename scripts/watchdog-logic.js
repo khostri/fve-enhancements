@@ -6,7 +6,7 @@ function evaluateTick(state, success, dryRun) {
     const ACTION_LABELS = [
         'AcPowerSetPoint=0',
         'OvervoltageFeedIn=0',
-        'Restore PV (not configured)'
+        'Solarcharger Mode=1 (all instances)'
     ];
 
     let { failCount, fired } = state;

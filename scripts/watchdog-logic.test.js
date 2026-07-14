@@ -59,3 +59,8 @@ test('normal healthy tick reports OK with no trigger or recovery', () => {
     assert.equal(result.recovered, false);
     assert.equal(result.statusText, 'OK');
 });
+
+test('triggered status text includes the solar charger restore action', () => {
+    const result = evaluateTick({ failCount: 9, fired: false }, false, false);
+    assert.match(result.statusText, /Solarcharger Mode=1/);
+});
