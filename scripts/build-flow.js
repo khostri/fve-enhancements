@@ -231,7 +231,7 @@ const flow = [
         type: 'exec',
         z: tabId,
         g: groupActionsId,
-        command: 'for svc in $(dbus -y | grep com.victronenergy.solarcharger | awk \'{print $1}\'); do dbus -y "$svc" /Mode SetValue %1; done',
+        command: 'for svc in $(dbus -y | grep com.victronenergy.solarcharger | awk \'{print $1}\'); do dbus -y "$svc" /Mode SetValue 1; done',
         addpay: '',
         append: '',
         useSpawn: 'false',

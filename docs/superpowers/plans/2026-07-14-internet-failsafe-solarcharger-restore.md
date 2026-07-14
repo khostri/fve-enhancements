@@ -204,6 +204,8 @@ Expected: FAIL — no `exec` node exists yet in the generated flow, and `action3
 
 - [ ] **Step 3: Rewrite `scripts/build-flow.js`**
 
+> **Note (post-review correction):** the `command:` string in the `action3Id` node listing below ends with `SetValue %1`. That was copied from a Victron community wiki example (`dbus -y com.victronenergy.settings /Settings/Logscript/Enabled SetValue %1`) and misread as literal dbus-CLI syntax for "set to integer 1" — it isn't. `%1` is not valid dbus-CLI substitution syntax, and it is not a bash positional parameter either (`$1` would be, but nothing populates it here). Node-RED's `exec` node only substitutes `msg.payload` into the command when `addpay`/`append` are set, and both are `''` on this node, so no substitution happens at all. At fire time the shell would send the literal two-character string `%1` as the `SetValue` argument instead of the integer `1`, meaning Action 3 would not actually restore curtailed solar chargers. This was caught in a post-commit review and fixed by hardcoding the literal digit: the command now ends with `SetValue 1; done`. The listing below is left as originally written for historical record; `scripts/build-flow.js` in the repo (the source of truth) and `internet_failsafe.json` both use the corrected `SetValue 1` form, and `scripts/build-flow.test.js` asserts `/SetValue 1;/`.
+
 Replace the entire file with:
 
 ```js

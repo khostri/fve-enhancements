@@ -53,7 +53,7 @@ test('build-flow.js wires a dynamic dbus restore action for solar chargers', () 
         /com\.victronenergy\.solarcharger/,
         'command should discover solarcharger services dynamically'
     );
-    assert.match(restoreNode.command, /SetValue %1/, 'command should set Mode to 1 (normal)');
+    assert.match(restoreNode.command, /SetValue 1;/, 'command should set Mode to 1 (normal)');
     assert.doesNotMatch(
         restoreNode.command,
         /\/solarcharger\/\d+\//,

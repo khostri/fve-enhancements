@@ -1,6 +1,6 @@
 [
     {
-        "id": "a2a03a5793de387a",
+        "id": "449f3aedf0f77d65",
         "type": "tab",
         "label": "Internet Failsafe",
         "disabled": false,
@@ -8,17 +8,17 @@
         "env": []
     },
     {
-        "id": "fea0d9c16f90d528",
+        "id": "0797247683b80486",
         "type": "group",
-        "z": "a2a03a5793de387a",
+        "z": "449f3aedf0f77d65",
         "name": "Connectivity Check",
         "style": {
             "label": true
         },
         "nodes": [
-            "9fbffdbc2a3bb39b",
-            "3aa38d2e394dfe10",
-            "046cd84137b2a05f"
+            "564b9374d2445643",
+            "332b490b4d539220",
+            "7b1412957cbae47a"
         ],
         "x": 54,
         "y": 59,
@@ -26,20 +26,20 @@
         "h": 160
     },
     {
-        "id": "8c1890dbf02f0f68",
+        "id": "2fb17e3bdb8d0434",
         "type": "group",
-        "z": "a2a03a5793de387a",
+        "z": "449f3aedf0f77d65",
         "name": "Watchdog + Failsafe Actions",
         "style": {
             "label": true
         },
         "nodes": [
-            "a36cd9fda5fe656e",
-            "fe32e774718caef8",
-            "b265e5746b9fd4c6",
-            "3ced9e51f88e3d9b",
-            "56c68c061b645019",
-            "705bbb213ba24b05"
+            "061f126c73478eae",
+            "965e654296a40bb1",
+            "907df5205fcd1d9c",
+            "1898d4199ede8be0",
+            "be39483c8ec4f868",
+            "dbf89b233205f955"
         ],
         "x": 494,
         "y": 59,
@@ -47,10 +47,10 @@
         "h": 320
     },
     {
-        "id": "9fbffdbc2a3bb39b",
+        "id": "564b9374d2445643",
         "type": "inject",
-        "z": "a2a03a5793de387a",
-        "g": "fea0d9c16f90d528",
+        "z": "449f3aedf0f77d65",
+        "g": "0797247683b80486",
         "name": "Tick (30s)",
         "props": [],
         "repeat": "30",
@@ -62,15 +62,15 @@
         "y": 100,
         "wires": [
             [
-                "3aa38d2e394dfe10"
+                "332b490b4d539220"
             ]
         ]
     },
     {
-        "id": "3aa38d2e394dfe10",
+        "id": "332b490b4d539220",
         "type": "http request",
-        "z": "a2a03a5793de387a",
-        "g": "fea0d9c16f90d528",
+        "z": "449f3aedf0f77d65",
+        "g": "0797247683b80486",
         "name": "Check VRM",
         "method": "HEAD",
         "ret": "txt",
@@ -88,33 +88,33 @@
         "y": 100,
         "wires": [
             [
-                "a36cd9fda5fe656e"
+                "061f126c73478eae"
             ]
         ]
     },
     {
-        "id": "046cd84137b2a05f",
+        "id": "7b1412957cbae47a",
         "type": "catch",
-        "z": "a2a03a5793de387a",
-        "g": "fea0d9c16f90d528",
+        "z": "449f3aedf0f77d65",
+        "g": "0797247683b80486",
         "name": "VRM Check Error",
         "scope": [
-            "3aa38d2e394dfe10"
+            "332b490b4d539220"
         ],
         "uncaught": false,
         "x": 300,
         "y": 160,
         "wires": [
             [
-                "a36cd9fda5fe656e"
+                "061f126c73478eae"
             ]
         ]
     },
     {
-        "id": "a36cd9fda5fe656e",
+        "id": "061f126c73478eae",
         "type": "function",
-        "z": "a2a03a5793de387a",
-        "g": "8c1890dbf02f0f68",
+        "z": "449f3aedf0f77d65",
+        "g": "2fb17e3bdb8d0434",
         "name": "Watchdog Evaluate",
         "func": "// --- pure decision logic, byte-identical to scripts/watchdog-logic.js (embedded by scripts/build-flow.js) ---\nfunction evaluateTick(state, success, dryRun) {\n    const THRESHOLD = 10;\n    const ACTION_LABELS = [\n        'AcPowerSetPoint=0',\n        'OvervoltageFeedIn=0',\n        'Solarcharger Mode=1 (all instances)'\n    ];\n\n    let { failCount, fired } = state;\n    let recovered = false;\n    let triggered = false;\n\n    if (success) {\n        if (fired) recovered = true;\n        failCount = 0;\n        fired = false;\n    } else {\n        failCount += 1;\n        if (failCount >= THRESHOLD && !fired) {\n            triggered = true;\n            fired = true;\n        }\n    }\n\n    let statusText;\n    if (triggered) {\n        statusText = (dryRun ? 'DRY-RUN: would fire failsafe (' : 'FAILSAFE FIRED: (') + ACTION_LABELS.join(', ') + ')';\n    } else if (recovered) {\n        statusText = 'Recovered - connectivity restored';\n    } else if (!success) {\n        statusText = 'Check failed (' + failCount + '/' + THRESHOLD + ')';\n    } else {\n        statusText = 'OK';\n    }\n\n    return { state: { failCount, fired }, triggered, recovered, statusText };\n}\n\n// --- Node-RED wrapper ---\nconst DRY_RUN = true;\n\n// Node-RED's http request node can deliver the SAME failed check twice for one\n// underlying request: once via its own output and once via the catch node\n// (observed in the field: connection/DNS errors produced two identical-second\n// messages per 30s tick, doubling the effective failure rate). Both deliveries\n// carry the same _msgid, so ignore an immediate repeat.\nconst lastMsgId = context.get(\"lastMsgId\");\nif (msg._msgid && msg._msgid === lastMsgId) {\n    return [null, null, null, null];\n}\ncontext.set(\"lastMsgId\", msg._msgid);\n\nconst success = typeof msg.statusCode === \"number\" && msg.statusCode >= 200 && msg.statusCode < 300;\nconst prevState = context.get(\"state\") || { failCount: 0, fired: false };\n\nconst result = evaluateTick(prevState, success, DRY_RUN);\ncontext.set(\"state\", result.state);\n\nnode.status({\n    fill: result.triggered ? \"red\" : (success ? \"green\" : \"yellow\"),\n    shape: \"dot\",\n    text: result.statusText\n});\n\nconst doFire = result.triggered && !DRY_RUN;\nconst action1 = doFire ? { payload: 0 } : null;\nconst action2 = doFire ? { payload: 0 } : null;\nconst action3 = doFire ? { payload: 1 } : null; // restore solar chargers: Mode=1 on every discovered instance\nconst statusMsg = { payload: result.statusText };\n\nreturn [action1, action2, action3, statusMsg];\n",
         "outputs": 4,
@@ -127,24 +127,24 @@
         "y": 100,
         "wires": [
             [
-                "fe32e774718caef8"
+                "965e654296a40bb1"
             ],
             [
-                "b265e5746b9fd4c6"
+                "907df5205fcd1d9c"
             ],
             [
-                "3ced9e51f88e3d9b"
+                "1898d4199ede8be0"
             ],
             [
-                "705bbb213ba24b05"
+                "dbf89b233205f955"
             ]
         ]
     },
     {
-        "id": "fe32e774718caef8",
+        "id": "965e654296a40bb1",
         "type": "victron-output-settings",
-        "z": "a2a03a5793de387a",
-        "g": "8c1890dbf02f0f68",
+        "z": "449f3aedf0f77d65",
+        "g": "2fb17e3bdb8d0434",
         "service": "com.victronenergy.settings",
         "path": "/Settings/CGwacs/AcPowerSetPoint",
         "serviceObj": {
@@ -178,10 +178,10 @@
         "wires": []
     },
     {
-        "id": "b265e5746b9fd4c6",
+        "id": "907df5205fcd1d9c",
         "type": "victron-output-settings",
-        "z": "a2a03a5793de387a",
-        "g": "8c1890dbf02f0f68",
+        "z": "449f3aedf0f77d65",
+        "g": "2fb17e3bdb8d0434",
         "service": "com.victronenergy.settings",
         "path": "/Settings/CGwacs/OvervoltageFeedIn",
         "serviceObj": {
@@ -219,11 +219,11 @@
         "wires": []
     },
     {
-        "id": "3ced9e51f88e3d9b",
+        "id": "1898d4199ede8be0",
         "type": "exec",
-        "z": "a2a03a5793de387a",
-        "g": "8c1890dbf02f0f68",
-        "command": "for svc in $(dbus -y | grep com.victronenergy.solarcharger | awk '{print $1}'); do dbus -y \"$svc\" /Mode SetValue %1; done",
+        "z": "449f3aedf0f77d65",
+        "g": "2fb17e3bdb8d0434",
+        "command": "for svc in $(dbus -y | grep com.victronenergy.solarcharger | awk '{print $1}'); do dbus -y \"$svc\" /Mode SetValue 1; done",
         "addpay": "",
         "append": "",
         "useSpawn": "false",
@@ -235,21 +235,21 @@
         "y": 180,
         "wires": [
             [
-                "56c68c061b645019"
+                "be39483c8ec4f868"
             ],
             [
-                "56c68c061b645019"
+                "be39483c8ec4f868"
             ],
             [
-                "56c68c061b645019"
+                "be39483c8ec4f868"
             ]
         ]
     },
     {
-        "id": "56c68c061b645019",
+        "id": "be39483c8ec4f868",
         "type": "debug",
-        "z": "a2a03a5793de387a",
-        "g": "8c1890dbf02f0f68",
+        "z": "449f3aedf0f77d65",
+        "g": "2fb17e3bdb8d0434",
         "name": "Solar Restore Exec Output",
         "active": true,
         "tosidebar": true,
@@ -264,10 +264,10 @@
         "wires": []
     },
     {
-        "id": "705bbb213ba24b05",
+        "id": "dbf89b233205f955",
         "type": "debug",
-        "z": "a2a03a5793de387a",
-        "g": "8c1890dbf02f0f68",
+        "z": "449f3aedf0f77d65",
+        "g": "2fb17e3bdb8d0434",
         "name": "Watchdog Status",
         "active": true,
         "tosidebar": true,
