@@ -22,6 +22,8 @@ const catchId = genId();
 const evalId = genId();
 const action1Id = genId();
 const action2Id = genId();
+const action3Id = genId();
+const action3DebugId = genId();
 const statusDebugId = genId();
 
 const evaluateTickSource = evaluateTick.toString();
@@ -58,7 +60,7 @@ node.status({
 const doFire = result.triggered && !DRY_RUN;
 const action1 = doFire ? { payload: 0 } : null;
 const action2 = doFire ? { payload: 0 } : null;
-const action3 = null; // placeholder for future PV-restore action - see spec Action 3
+const action3 = doFire ? { payload: 1 } : null; // restore solar chargers: Mode=1 on every discovered instance
 const statusMsg = { payload: result.statusText };
 
 return [action1, action2, action3, statusMsg];
@@ -70,7 +72,7 @@ const flow = [
         type: 'tab',
         label: 'Internet Failsafe',
         disabled: false,
-        info: 'Watches VRM reachability. After 5 minutes unreachable, zeroes ESS grid setpoint and disables DC feed-in so remote-control loss cannot leave the battery selling indefinitely. See docs/superpowers/specs/2026-07-09-internet-failsafe-design.md.',
+        info: 'Watches VRM reachability. After 5 minutes unreachable, zeroes ESS grid setpoint, disables DC feed-in, and restores any curtailed solar chargers, so remote-control loss cannot leave the battery selling indefinitely or PV curtailed indefinitely. See docs/superpowers/specs/2026-07-09-internet-failsafe-design.md.',
         env: []
     },
     {
@@ -88,8 +90,8 @@ const flow = [
         z: tabId,
         name: 'Watchdog + Failsafe Actions',
         style: { label: true },
-        nodes: [evalId, action1Id, action2Id, statusDebugId],
-        x: 494, y: 59, w: 560, h: 220
+        nodes: [evalId, action1Id, action2Id, action3Id, action3DebugId, statusDebugId],
+        x: 494, y: 59, w: 620, h: 320
     },
     {
         id: tickId,
@@ -152,7 +154,7 @@ const flow = [
         finalize: '',
         libs: [],
         x: 560, y: 100,
-        wires: [[action1Id], [action2Id], [], [statusDebugId]]
+        wires: [[action1Id], [action2Id], [action3Id], [statusDebugId]]
     },
     {
         id: action1Id,
@@ -225,6 +227,39 @@ const flow = [
         wires: []
     },
     {
+        id: action3Id,
+        type: 'exec',
+        z: tabId,
+        g: groupActionsId,
+        command: 'for svc in $(dbus -y | grep com.victronenergy.solarcharger | awk \'{print $1}\'); do dbus -y "$svc" /Mode SetValue %1; done',
+        addpay: '',
+        append: '',
+        useSpawn: 'false',
+        timer: '10',
+        winHide: false,
+        oldrc: false,
+        name: 'Restore Solar Chargers (dbus, dynamic)',
+        x: 820, y: 180,
+        wires: [[action3DebugId], [action3DebugId], [action3DebugId]]
+    },
+    {
+        id: action3DebugId,
+        type: 'debug',
+        z: tabId,
+        g: groupActionsId,
+        name: 'Solar Restore Exec Output',
+        active: true,
+        tosidebar: true,
+        console: false,
+        tostatus: false,
+        complete: 'true',
+        targetType: 'full',
+        statusVal: '',
+        statusType: 'auto',
+        x: 820, y: 230,
+        wires: []
+    },
+    {
         id: statusDebugId,
         type: 'debug',
         z: tabId,
@@ -238,7 +273,7 @@ const flow = [
         targetType: 'msg',
         statusVal: '',
         statusType: 'auto',
-        x: 820, y: 180,
+        x: 820, y: 280,
         wires: []
     }
 ];

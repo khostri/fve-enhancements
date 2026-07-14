@@ -1,24 +1,24 @@
 [
     {
-        "id": "58aad7a8bc0ff6d0",
+        "id": "a2a03a5793de387a",
         "type": "tab",
         "label": "Internet Failsafe",
         "disabled": false,
-        "info": "Watches VRM reachability. After 5 minutes unreachable, zeroes ESS grid setpoint and disables DC feed-in so remote-control loss cannot leave the battery selling indefinitely. See docs/superpowers/specs/2026-07-09-internet-failsafe-design.md.",
+        "info": "Watches VRM reachability. After 5 minutes unreachable, zeroes ESS grid setpoint, disables DC feed-in, and restores any curtailed solar chargers, so remote-control loss cannot leave the battery selling indefinitely or PV curtailed indefinitely. See docs/superpowers/specs/2026-07-09-internet-failsafe-design.md.",
         "env": []
     },
     {
-        "id": "c0e6ac2987df4509",
+        "id": "fea0d9c16f90d528",
         "type": "group",
-        "z": "58aad7a8bc0ff6d0",
+        "z": "a2a03a5793de387a",
         "name": "Connectivity Check",
         "style": {
             "label": true
         },
         "nodes": [
-            "97f0f3877c142b29",
-            "81f10f74f90b3381",
-            "9ca0249e7edc9fea"
+            "9fbffdbc2a3bb39b",
+            "3aa38d2e394dfe10",
+            "046cd84137b2a05f"
         ],
         "x": 54,
         "y": 59,
@@ -26,29 +26,31 @@
         "h": 160
     },
     {
-        "id": "b4bc4ee9d7878ab6",
+        "id": "8c1890dbf02f0f68",
         "type": "group",
-        "z": "58aad7a8bc0ff6d0",
+        "z": "a2a03a5793de387a",
         "name": "Watchdog + Failsafe Actions",
         "style": {
             "label": true
         },
         "nodes": [
-            "d7687b6cc31c2617",
-            "bf828e32738d314f",
-            "e8a94339cec09e91",
-            "03788ac478b7967a"
+            "a36cd9fda5fe656e",
+            "fe32e774718caef8",
+            "b265e5746b9fd4c6",
+            "3ced9e51f88e3d9b",
+            "56c68c061b645019",
+            "705bbb213ba24b05"
         ],
         "x": 494,
         "y": 59,
-        "w": 560,
-        "h": 220
+        "w": 620,
+        "h": 320
     },
     {
-        "id": "97f0f3877c142b29",
+        "id": "9fbffdbc2a3bb39b",
         "type": "inject",
-        "z": "58aad7a8bc0ff6d0",
-        "g": "c0e6ac2987df4509",
+        "z": "a2a03a5793de387a",
+        "g": "fea0d9c16f90d528",
         "name": "Tick (30s)",
         "props": [],
         "repeat": "30",
@@ -60,15 +62,15 @@
         "y": 100,
         "wires": [
             [
-                "81f10f74f90b3381"
+                "3aa38d2e394dfe10"
             ]
         ]
     },
     {
-        "id": "81f10f74f90b3381",
+        "id": "3aa38d2e394dfe10",
         "type": "http request",
-        "z": "58aad7a8bc0ff6d0",
-        "g": "c0e6ac2987df4509",
+        "z": "a2a03a5793de387a",
+        "g": "fea0d9c16f90d528",
         "name": "Check VRM",
         "method": "HEAD",
         "ret": "txt",
@@ -86,35 +88,35 @@
         "y": 100,
         "wires": [
             [
-                "d7687b6cc31c2617"
+                "a36cd9fda5fe656e"
             ]
         ]
     },
     {
-        "id": "9ca0249e7edc9fea",
+        "id": "046cd84137b2a05f",
         "type": "catch",
-        "z": "58aad7a8bc0ff6d0",
-        "g": "c0e6ac2987df4509",
+        "z": "a2a03a5793de387a",
+        "g": "fea0d9c16f90d528",
         "name": "VRM Check Error",
         "scope": [
-            "81f10f74f90b3381"
+            "3aa38d2e394dfe10"
         ],
         "uncaught": false,
         "x": 300,
         "y": 160,
         "wires": [
             [
-                "d7687b6cc31c2617"
+                "a36cd9fda5fe656e"
             ]
         ]
     },
     {
-        "id": "d7687b6cc31c2617",
+        "id": "a36cd9fda5fe656e",
         "type": "function",
-        "z": "58aad7a8bc0ff6d0",
-        "g": "b4bc4ee9d7878ab6",
+        "z": "a2a03a5793de387a",
+        "g": "8c1890dbf02f0f68",
         "name": "Watchdog Evaluate",
-        "func": "// --- pure decision logic, byte-identical to scripts/watchdog-logic.js (embedded by scripts/build-flow.js) ---\nfunction evaluateTick(state, success, dryRun) {\n    const THRESHOLD = 10;\n    const ACTION_LABELS = [\n        'AcPowerSetPoint=0',\n        'OvervoltageFeedIn=0',\n        'Restore PV (not configured)'\n    ];\n\n    let { failCount, fired } = state;\n    let recovered = false;\n    let triggered = false;\n\n    if (success) {\n        if (fired) recovered = true;\n        failCount = 0;\n        fired = false;\n    } else {\n        failCount += 1;\n        if (failCount >= THRESHOLD && !fired) {\n            triggered = true;\n            fired = true;\n        }\n    }\n\n    let statusText;\n    if (triggered) {\n        statusText = (dryRun ? 'DRY-RUN: would fire failsafe (' : 'FAILSAFE FIRED: (') + ACTION_LABELS.join(', ') + ')';\n    } else if (recovered) {\n        statusText = 'Recovered - connectivity restored';\n    } else if (!success) {\n        statusText = 'Check failed (' + failCount + '/' + THRESHOLD + ')';\n    } else {\n        statusText = 'OK';\n    }\n\n    return { state: { failCount, fired }, triggered, recovered, statusText };\n}\n\n// --- Node-RED wrapper ---\nconst DRY_RUN = true;\n\n// Node-RED's http request node can deliver the SAME failed check twice for one\n// underlying request: once via its own output and once via the catch node\n// (observed in the field: connection/DNS errors produced two identical-second\n// messages per 30s tick, doubling the effective failure rate). Both deliveries\n// carry the same _msgid, so ignore an immediate repeat.\nconst lastMsgId = context.get(\"lastMsgId\");\nif (msg._msgid && msg._msgid === lastMsgId) {\n    return [null, null, null, null];\n}\ncontext.set(\"lastMsgId\", msg._msgid);\n\nconst success = typeof msg.statusCode === \"number\" && msg.statusCode >= 200 && msg.statusCode < 300;\nconst prevState = context.get(\"state\") || { failCount: 0, fired: false };\n\nconst result = evaluateTick(prevState, success, DRY_RUN);\ncontext.set(\"state\", result.state);\n\nnode.status({\n    fill: result.triggered ? \"red\" : (success ? \"green\" : \"yellow\"),\n    shape: \"dot\",\n    text: result.statusText\n});\n\nconst doFire = result.triggered && !DRY_RUN;\nconst action1 = doFire ? { payload: 0 } : null;\nconst action2 = doFire ? { payload: 0 } : null;\nconst action3 = null; // placeholder for future PV-restore action - see spec Action 3\nconst statusMsg = { payload: result.statusText };\n\nreturn [action1, action2, action3, statusMsg];\n",
+        "func": "// --- pure decision logic, byte-identical to scripts/watchdog-logic.js (embedded by scripts/build-flow.js) ---\nfunction evaluateTick(state, success, dryRun) {\n    const THRESHOLD = 10;\n    const ACTION_LABELS = [\n        'AcPowerSetPoint=0',\n        'OvervoltageFeedIn=0',\n        'Solarcharger Mode=1 (all instances)'\n    ];\n\n    let { failCount, fired } = state;\n    let recovered = false;\n    let triggered = false;\n\n    if (success) {\n        if (fired) recovered = true;\n        failCount = 0;\n        fired = false;\n    } else {\n        failCount += 1;\n        if (failCount >= THRESHOLD && !fired) {\n            triggered = true;\n            fired = true;\n        }\n    }\n\n    let statusText;\n    if (triggered) {\n        statusText = (dryRun ? 'DRY-RUN: would fire failsafe (' : 'FAILSAFE FIRED: (') + ACTION_LABELS.join(', ') + ')';\n    } else if (recovered) {\n        statusText = 'Recovered - connectivity restored';\n    } else if (!success) {\n        statusText = 'Check failed (' + failCount + '/' + THRESHOLD + ')';\n    } else {\n        statusText = 'OK';\n    }\n\n    return { state: { failCount, fired }, triggered, recovered, statusText };\n}\n\n// --- Node-RED wrapper ---\nconst DRY_RUN = true;\n\n// Node-RED's http request node can deliver the SAME failed check twice for one\n// underlying request: once via its own output and once via the catch node\n// (observed in the field: connection/DNS errors produced two identical-second\n// messages per 30s tick, doubling the effective failure rate). Both deliveries\n// carry the same _msgid, so ignore an immediate repeat.\nconst lastMsgId = context.get(\"lastMsgId\");\nif (msg._msgid && msg._msgid === lastMsgId) {\n    return [null, null, null, null];\n}\ncontext.set(\"lastMsgId\", msg._msgid);\n\nconst success = typeof msg.statusCode === \"number\" && msg.statusCode >= 200 && msg.statusCode < 300;\nconst prevState = context.get(\"state\") || { failCount: 0, fired: false };\n\nconst result = evaluateTick(prevState, success, DRY_RUN);\ncontext.set(\"state\", result.state);\n\nnode.status({\n    fill: result.triggered ? \"red\" : (success ? \"green\" : \"yellow\"),\n    shape: \"dot\",\n    text: result.statusText\n});\n\nconst doFire = result.triggered && !DRY_RUN;\nconst action1 = doFire ? { payload: 0 } : null;\nconst action2 = doFire ? { payload: 0 } : null;\nconst action3 = doFire ? { payload: 1 } : null; // restore solar chargers: Mode=1 on every discovered instance\nconst statusMsg = { payload: result.statusText };\n\nreturn [action1, action2, action3, statusMsg];\n",
         "outputs": 4,
         "timeout": 0,
         "noerr": 0,
@@ -125,22 +127,24 @@
         "y": 100,
         "wires": [
             [
-                "bf828e32738d314f"
+                "fe32e774718caef8"
             ],
             [
-                "e8a94339cec09e91"
+                "b265e5746b9fd4c6"
             ],
-            [],
             [
-                "03788ac478b7967a"
+                "3ced9e51f88e3d9b"
+            ],
+            [
+                "705bbb213ba24b05"
             ]
         ]
     },
     {
-        "id": "bf828e32738d314f",
+        "id": "fe32e774718caef8",
         "type": "victron-output-settings",
-        "z": "58aad7a8bc0ff6d0",
-        "g": "b4bc4ee9d7878ab6",
+        "z": "a2a03a5793de387a",
+        "g": "8c1890dbf02f0f68",
         "service": "com.victronenergy.settings",
         "path": "/Settings/CGwacs/AcPowerSetPoint",
         "serviceObj": {
@@ -174,10 +178,10 @@
         "wires": []
     },
     {
-        "id": "e8a94339cec09e91",
+        "id": "b265e5746b9fd4c6",
         "type": "victron-output-settings",
-        "z": "58aad7a8bc0ff6d0",
-        "g": "b4bc4ee9d7878ab6",
+        "z": "a2a03a5793de387a",
+        "g": "8c1890dbf02f0f68",
         "service": "com.victronenergy.settings",
         "path": "/Settings/CGwacs/OvervoltageFeedIn",
         "serviceObj": {
@@ -215,10 +219,55 @@
         "wires": []
     },
     {
-        "id": "03788ac478b7967a",
+        "id": "3ced9e51f88e3d9b",
+        "type": "exec",
+        "z": "a2a03a5793de387a",
+        "g": "8c1890dbf02f0f68",
+        "command": "for svc in $(dbus -y | grep com.victronenergy.solarcharger | awk '{print $1}'); do dbus -y \"$svc\" /Mode SetValue %1; done",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "10",
+        "winHide": false,
+        "oldrc": false,
+        "name": "Restore Solar Chargers (dbus, dynamic)",
+        "x": 820,
+        "y": 180,
+        "wires": [
+            [
+                "56c68c061b645019"
+            ],
+            [
+                "56c68c061b645019"
+            ],
+            [
+                "56c68c061b645019"
+            ]
+        ]
+    },
+    {
+        "id": "56c68c061b645019",
         "type": "debug",
-        "z": "58aad7a8bc0ff6d0",
-        "g": "b4bc4ee9d7878ab6",
+        "z": "a2a03a5793de387a",
+        "g": "8c1890dbf02f0f68",
+        "name": "Solar Restore Exec Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 820,
+        "y": 230,
+        "wires": []
+    },
+    {
+        "id": "705bbb213ba24b05",
+        "type": "debug",
+        "z": "a2a03a5793de387a",
+        "g": "8c1890dbf02f0f68",
         "name": "Watchdog Status",
         "active": true,
         "tosidebar": true,
@@ -229,7 +278,7 @@
         "statusVal": "",
         "statusType": "auto",
         "x": 820,
-        "y": 180,
+        "y": 280,
         "wires": []
     }
 ]
