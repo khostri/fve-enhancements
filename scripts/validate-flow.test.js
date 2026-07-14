@@ -51,3 +51,10 @@ test('an id colliding with an already-deployed flow is reported', () => {
     const errors = validateFlow(nodes, [deployedIds]);
     assert.ok(errors.some(e => e.includes('Id collides with an already-deployed flow: n1')));
 });
+
+test('the "exec" node type (core Node-RED, not a palette add-on) is allowed', () => {
+    const nodes = minimalValidFlow();
+    nodes.push({ id: 'n3', type: 'exec', z: 'tab1', wires: [[], [], []] });
+    const errors = validateFlow(nodes);
+    assert.ok(!errors.some(e => e.includes('type "exec"')));
+});

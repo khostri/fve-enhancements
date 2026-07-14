@@ -3,7 +3,7 @@
 const fs = require('fs');
 
 const ALLOWED_TYPES = new Set([
-    'tab', 'group', 'inject', 'http request', 'catch', 'function', 'debug',
+    'tab', 'group', 'inject', 'http request', 'catch', 'function', 'debug', 'exec',
     'change', 'bigtimer', 'rbe',
     'victron-input-system', 'victron-input-settings', 'victron-input-relay',
     'victron-output-relay', 'victron-output-settings', 'global-config'
